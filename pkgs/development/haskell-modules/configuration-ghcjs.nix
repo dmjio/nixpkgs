@@ -87,10 +87,19 @@ self: super:
        license = stdenv.lib.licenses.mit;
      }) {};
 
+  ghcjs-dom-jsffi = overrideCabal super.ghcjs-dom-jsffi (drv: {
+    isLibrary = true;
+    libraryHaskellDepends = [ self.text self.base self.ghcjs-base self.ghcjs-prim self.ghc-prim self.Cabal_1_24_0_0 ];
+  });
+
   ghcjs-dom = overrideCabal super.ghcjs-dom (drv: {
-    libraryHaskellDepends = [ self.ghcjs-base ] ++
+    libraryHaskellDepends =
+        (if super.ghcjs-dom.version >= "0.3.1.0"
+          then [ ghcjs-dom-jsaddle]
+	  else []) ++
+      [ self.ghcjs-base ] ++
       removeLibraryHaskellDepends [
-        "glib" "gtk" "gtk3" "webkitgtk" "webkitgtk3"
+        "ghcjs-dom-jsaddle" "glib" "gtk" "gtk3" "webkitgtk" "webkitgtk3"
       ] drv.libraryHaskellDepends;
   });
 
