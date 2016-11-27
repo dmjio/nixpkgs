@@ -176,6 +176,8 @@ let
 
     fix = callPackage ../development/ocaml-modules/fix { };
 
+    fmt = callPackage ../development/ocaml-modules/fmt { };
+
     fontconfig = callPackage ../development/ocaml-modules/fontconfig {
       inherit (pkgs) fontconfig;
     };
@@ -338,6 +340,8 @@ let
     ocp-index = callPackage ../development/tools/ocaml/ocp-index { };
 
     ocplib-endian = callPackage ../development/ocaml-modules/ocplib-endian { };
+
+    ocplib-simplex = callPackage ../development/ocaml-modules/ocplib-simplex { };
 
     ocsigen_server = callPackage ../development/ocaml-modules/ocsigen-server { };
 

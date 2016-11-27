@@ -144,7 +144,6 @@ self: super: {
   groupoids = dontHaddock super.groupoids;
   hamlet = dontHaddock super.hamlet;
   HaXml = dontHaddock super.HaXml;
-  HDBC-odbc = dontHaddock super.HDBC-odbc;
   hoodle-core = dontHaddock super.hoodle-core;
   hsc3-db = dontHaddock super.hsc3-db;
   http-client-conduit = dontHaddock super.http-client-conduit;
@@ -808,7 +807,7 @@ self: super: {
   };
 
   # # Make elisp files available at a location where people expect it.
-  hindent = overrideCabal super.hindent (drv: {
+  hindent = (overrideCabal super.hindent (drv: {
     # We cannot easily byte-compile these files, unfortunately, because they
     # depend on a new version of haskell-mode that we don't have yet.
     postInstall = ''
@@ -817,7 +816,9 @@ self: super: {
       ln -s $lispdir $out/share/emacs/site-lisp
     '';
     doCheck = false; # https://github.com/chrisdone/hindent/issues/299
-  });
+  })).override {
+    haskell-src-exts = self.haskell-src-exts_1_19_0;
+  };
 
   # https://github.com/yesodweb/Shelly.hs/issues/106
   # https://github.com/yesodweb/Shelly.hs/issues/108
@@ -987,7 +988,7 @@ self: super: {
   });
 
   # The latest Hoogle needs versions not yet in LTS Haskell 7.x.
-  hoogle = super.hoogle.override { haskell-src-exts = self.haskell-src-exts_1_18_2; };
+  hoogle = super.hoogle.override { haskell-src-exts = self.haskell-src-exts_1_19_0; };
 
   # To be in sync with Hoogle.
   lambdabot-haskell-plugins = (overrideCabal super.lambdabot-haskell-plugins (drv: {
@@ -1066,6 +1067,15 @@ self: super: {
 
   # https://github.com/roelvandijk/terminal-progress-bar/issues/13
   terminal-progress-bar = doJailbreak super.terminal-progress-bar;
+
+  # https://github.com/hdbc/hdbc-odbc/pull/29
+  HDBC-odbc = overrideCabal super.HDBC-odbc (old: {
+    postPatch = old.postPatch or "" + ''
+      sed -e '/data BoundValue =/ { s/$/{/ ; n; n ; s/{ bvVal/  bvVal/ }' \
+          -e 's/-- | This is rather/-- This is rather/' \
+          -i Database/HDBC/ODBC/Statement.hsc
+    '';
+  });
 
   # https://github.com/vshabanov/HsOpenSSL/issues/11
   HsOpenSSL = doJailbreak super.HsOpenSSL;
