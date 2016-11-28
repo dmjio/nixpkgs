@@ -9,11 +9,15 @@ let
   mkListener = l: ''{port: ${toString l.port}, bind_address: "${l.bind_address}", type: ${l.type}, tls: ${fromBool l.tls}, x_forwarded: ${fromBool l.x_forwarded}, resources: [${concatStringsSep "," (map mkResource l.resources)}]}'';
   fromBool = x: if x then "true" else "false";
   configFile = pkgs.writeText "homeserver.yaml" ''
+${optionalString (cfg.tls_certificate_path != null) ''
 tls_certificate_path: "${cfg.tls_certificate_path}"
+''}
 ${optionalString (cfg.tls_private_key_path != null) ''
 tls_private_key_path: "${cfg.tls_private_key_path}"
 ''}
+${optionalString (cfg.tls_dh_params_path != null) ''
 tls_dh_params_path: "${cfg.tls_dh_params_path}"
+''}
 no_tls: ${fromBool cfg.no_tls}
 ${optionalString (cfg.bind_port != null) ''
 bind_port: ${toString cfg.bind_port}
@@ -55,7 +59,12 @@ uploads_path: "/var/lib/matrix-synapse/uploads"
 max_upload_size: "${cfg.max_upload_size}"
 max_image_pixels: "${cfg.max_image_pixels}"
 dynamic_thumbnails: ${fromBool cfg.dynamic_thumbnails}
-url_preview_enabled: False
+url_preview_enabled: ${fromBool cfg.url_preview_enabled}
+${optionalString (cfg.url_preview_enabled == true) ''
+url_preview_ip_range_blacklist: ${builtins.toJSON cfg.url_preview_ip_range_blacklist}
+url_preview_ip_range_whitelist: ${builtins.toJSON cfg.url_preview_ip_range_whitelist}
+url_preview_url_blacklist: ${builtins.toJSON cfg.url_preview_url_blacklist}
+''}
 recaptcha_private_key: "${cfg.recaptcha_private_key}"
 recaptcha_public_key: "${cfg.recaptcha_public_key}"
 enable_registration_captcha: ${fromBool cfg.enable_registration_captcha}
@@ -146,8 +155,9 @@ in {
         '';
       };
       tls_certificate_path = mkOption {
-        type = types.str;
-        default = "/var/lib/matrix-synapse/homeserver.tls.crt";
+        type = types.nullOr types.str;
+        default = null;
+        example = "/var/lib/matrix-synapse/homeserver.tls.crt";
         description = ''
           PEM encoded X509 certificate for TLS.
           You can replace the self-signed certificate that synapse
@@ -158,16 +168,17 @@ in {
       };
       tls_private_key_path = mkOption {
         type = types.nullOr types.str;
-        default = "/var/lib/matrix-synapse/homeserver.tls.key";
-        example = null;
+        default = null;
+        example = "/var/lib/matrix-synapse/homeserver.tls.key";
         description = ''
           PEM encoded private key for TLS. Specify null if synapse is not
           speaking TLS directly.
         '';
       };
       tls_dh_params_path = mkOption {
-        type = types.str;
-        default = "/var/lib/matrix-synapse/homeserver.tls.dh";
+        type = types.nullOr types.str;
+        default = null;
+        example = "/var/lib/matrix-synapse/homeserver.tls.dh";
         description = ''
           PEM dh parameters for ephemeral keys
         '';
@@ -348,6 +359,47 @@ in {
         type = types.str;
         default = "10K";
         description = "Number of events to cache in memory.";
+      };
+      url_preview_enabled = mkOption {
+        type = types.bool;
+        default = false;
+        description = ''
+          Is the preview URL API enabled?  If enabled, you *must* specify an
+          explicit url_preview_ip_range_blacklist of IPs that the spider is
+          denied from accessing.
+        '';
+      };
+      url_preview_ip_range_blacklist = mkOption {
+        type = types.listOf types.str;
+        default = [];
+        description = ''
+          List of IP address CIDR ranges that the URL preview spider is denied
+          from accessing.
+        '';
+      };
+      url_preview_ip_range_whitelist = mkOption {
+        type = types.listOf types.str;
+        default = [];
+        description = ''
+          List of IP address CIDR ranges that the URL preview spider is allowed
+          to access even if they are specified in
+          url_preview_ip_range_blacklist.
+        '';
+      };
+      url_preview_url_blacklist = mkOption {
+        type = types.listOf types.str;
+        default = [
+          "127.0.0.0/8"
+          "10.0.0.0/8"
+          "172.16.0.0/12"
+          "192.168.0.0/16"
+          "100.64.0.0/10"
+          "169.254.0.0/16"
+        ];
+        description = ''
+          Optional list of URL matches that the URL preview spider is
+          denied from accessing.
+        '';
       };
       recaptcha_private_key = mkOption {
         type = types.str;
@@ -557,12 +609,10 @@ in {
       after = [ "network.target" ];
       wantedBy = [ "multi-user.target" ];
       preStart = ''
-        if ! test -e /var/lib/matrix-synapse; then
-          mkdir -p /var/lib/matrix-synapse
-          chmod 700 /var/lib/matrix-synapse
-          chown -R matrix-synapse:matrix-synapse /var/lib/matrix-synapse
-          ${cfg.package}/bin/homeserver --config-path ${configFile} --keys-directory /var/lib/matrix-synapse/ --generate-keys
-        fi
+        ${cfg.package}/bin/homeserver \
+          --config-path ${configFile} \
+          --keys-directory /var/lib/matrix-synapse \
+          --generate-keys
       '';
       serviceConfig = {
         Type = "simple";
@@ -570,7 +620,7 @@ in {
         Group = "matrix-synapse";
         WorkingDirectory = "/var/lib/matrix-synapse";
         PermissionsStartOnly = true;
-        ExecStart = "${cfg.package}/bin/homeserver --config-path ${configFile}";
+        ExecStart = "${cfg.package}/bin/homeserver --config-path ${configFile} --keys-directory /var/lib/matrix-synapse";
       };
     };
   };

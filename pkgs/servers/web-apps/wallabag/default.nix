@@ -2,13 +2,13 @@
 
 stdenv.mkDerivation rec {
   name = "wallabag-${version}";
-  version = "2.1.2";
+  version = "2.1.4";
 
   # remember to rm -r var/cache/* after a rebuild or unexpected errors will occur
 
   src = fetchurl {
     url = "https://framabag.org/wallabag-release-${version}.tar.gz";
-    sha256 = "01i4xdzw126wwwkxy0d97dizrikvawpzqj95bykd1g25m7jzvb7k";
+    sha256 = "0s4p9jls7jqq9jbcac21ibz9k5yxx0ifv2yhxlkia5kw9md20r7b";
   };
 
   outputs = [ "out" "doc" ];

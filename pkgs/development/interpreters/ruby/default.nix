@@ -129,6 +129,9 @@ let
           $out/bin/ruby setup.rb
           popd
 
+          # Remove unnecessary groff reference from runtime closure, since it's big
+          sed -i '/NROFF/d' $out/lib/ruby/*/*/rbconfig.rb
+
           # Bundler tries to create this directory
           mkdir -pv $out/${passthru.gemPath}
           mkdir -p $out/nix-support
@@ -208,11 +211,11 @@ in {
     };
   };
 
-  ruby_2_3_1 = generic {
-    version = rubyVersion "2" "3" "1" "";
+  ruby_2_3_3 = generic {
+    version = rubyVersion "2" "3" "3" "";
     sha256 = {
-      src = "1kbxg72las93w0y553cxv3lymy2wvij3i3pg1y9g8aq3na676z5q";
-      git = "0dv1rf5f9lj3icqs51bq7ljdcf17sdclmxm9hilwxps5l69v5q9r";
+      src = "1dqmh42p6siv9aqzdjldsnhljj3f2h30m0v8cf25icjmqp40h514";
+      git = "0cwjf0nrzaa5g81bw0qp65byyadhxvbnvprkshv3ckjl7yi46zf6";
     };
   };
 }

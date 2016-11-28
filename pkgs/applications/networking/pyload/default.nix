@@ -6,8 +6,8 @@ pythonPackages.buildPythonApplication rec {
   src = fetchFromGitHub {
     owner = "pyload";
     repo = "pyload";
-    rev = "03f3ad9e39da2b9a378987693c4a69720e4084c7";
-    sha256 = "0fgsz6yzxrlq3qvsyxsyzgmy4za35v1xh3i4drhispk9zb5jm1xx";
+    rev = "721ea9f089217b9cb0f2799c051116421faac081";
+    sha256 = "1ad4r9slx1wgvd2fs4plfbpzi4i2l2bk0lybzsb2ncgh59m87h54";
   };
 
   patches =
@@ -19,7 +19,7 @@ pythonPackages.buildPythonApplication rec {
       };
       setupPyPatch = fetchpatch {
         url = "https://patch-diff.githubusercontent.com/raw/pyload/pyload/pull/2638.diff";
-        sha256 = "1gmvsmlcvb96g48kibv47cbmb5slivy3c5qflb5n0qc8k7axg3i9";
+        sha256 = "006g4qbl582262ariflbyfrszcx8ck2ac1cpry1f82f76p4cgf6z";
       };
     in [ configParserPatch setupPyPatch ];
 
@@ -28,8 +28,8 @@ pythonPackages.buildPythonApplication rec {
   ];
 
   propagatedBuildInputs = with pythonPackages; [
-    pycurl jinja2 beaker thrift simplejson pycrypto feedparser pyqt4 gdbm
-    tkinter beautifulsoup
+    pycurl jinja2 beaker thrift simplejson pycrypto feedparser tkinter
+    beautifulsoup send2trash
   ];
 
   #remove this once the PR patches above are merged. Needed because githubs diff endpoint
