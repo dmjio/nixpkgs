@@ -429,9 +429,7 @@ in
 
   arandr = callPackage ../tools/X11/arandr { };
 
-  arangodb = callPackage ../servers/nosql/arangodb {
-    inherit (pythonPackages) gyp;
-  };
+  arangodb = callPackage ../servers/nosql/arangodb { };
 
   arcanist = callPackage ../development/tools/misc/arcanist {};
 
@@ -475,9 +473,9 @@ in
 
   avfs = callPackage ../tools/filesystems/avfs { };
 
-  awscli = pythonPackages.awscli;
+  awscli = pythonPackages.awscli; # Should be moved out of python-packages.nix
 
-  aws_shell = pythonPackages.aws_shell;
+  aws_shell = python2Packages.aws_shell; # Should be moved out of python-packages.nix
 
   azure-cli = nodePackages.azure-cli;
 
@@ -634,7 +632,7 @@ in
 
   bins = callPackage ../tools/graphics/bins { };
 
-  bitbucket-cli = pythonPackages.bitbucket-cli;
+  bitbucket-cli = python2Packages.bitbucket-cli;
 
   blink = callPackage ../applications/networking/instant-messengers/blink { };
 
@@ -1397,7 +1395,7 @@ in
 
   ddrescue = callPackage ../tools/system/ddrescue { };
 
-  deluge = pythonPackages.deluge;
+  deluge = python2Packages.deluge; # Package should be moved out of python-packages.nix
 
   desktop_file_utils = callPackage ../tools/misc/desktop-file-utils { };
 
@@ -1611,7 +1609,7 @@ in
 
   f2fs-tools = callPackage ../tools/filesystems/f2fs-tools { };
 
-  Fabric = pythonPackages.Fabric;
+  Fabric = python2Packages.Fabric;
 
   fail2ban = callPackage ../tools/security/fail2ban { };
 
@@ -3329,6 +3327,8 @@ in
   polipo = callPackage ../servers/polipo { };
 
   polkit_gnome = callPackage ../tools/security/polkit-gnome { };
+
+  polysh = callPackage ../tools/networking/polysh { };
 
   ponysay = callPackage ../tools/misc/ponysay { };
 
@@ -5215,14 +5215,16 @@ in
   };
 
   rust = rustStable;
+  rustcNightlyBin = lowPrio (callPackage ../development/compilers/rust/nightlyBin.nix {});
   rustStable = callPackage ../development/compilers/rust {};
   rustBeta = callPackage ../development/compilers/rust/beta.nix {};
-  rustUnstable = callPackage ../development/compilers/rust/head.nix {
+  rustNightly = callPackage ../development/compilers/rust/nightly.nix {
     rustPlatform = recurseIntoAttrs (makeRustPlatform rustBeta);
   };
 
   cargo = rust.cargo;
   rustc = rust.rustc;
+
   rustPlatform = recurseIntoAttrs (makeRustPlatform rust);
 
   makeRustPlatform = rust: lib.fix (self:
@@ -10016,6 +10018,8 @@ in
 
   sabnzbd = callPackage ../servers/sabnzbd { };
 
+  bftpd = callPackage ../servers/ftp/bftpd {};
+
   bind = callPackage ../servers/dns/bind { };
   dnsutils = bind.dnsutils;
 
@@ -10775,7 +10779,7 @@ in
   fatrace = callPackage ../os-specific/linux/fatrace { };
 
   ffadoFull = callPackage ../os-specific/linux/ffado {
-    inherit (pythonPackages) python pyqt4 dbus-python;
+    inherit (python2Packages) python pyqt4 dbus-python;
   };
   libffado = ffadoFull.override { prefix = "lib"; };
 
@@ -11199,15 +11203,17 @@ in
   linux_grsec_nixos = callPackage ../build-support/grsecurity {
     inherit (lib) overrideDerivation;
     kernel = callPackage ../os-specific/linux/kernel/linux-grsecurity.nix {
-      kernelPatches = with self.kernelPatches; [ bridge_stp_helper ]
-        ++ lib.optionals ((platform.kernelArch or null) == "mips")
+      kernelPatches = with self.kernelPatches; [
+        bridge_stp_helper
+        modinst_arg_list_too_long
+      ] ++ lib.optionals ((platform.kernelArch or null) == "mips")
         [ kernelPatches.mips_fpureg_emu
           kernelPatches.mips_fpu_sigill
           kernelPatches.mips_ext3_n32
         ];
     };
     grsecPatch = self.kernelPatches.grsecurity_testing;
-    kernelPatches = with self.kernelPatches; [ grsecurity_nixos_kmod grsecurity_modinst ];
+    kernelPatches = [ self.kernelPatches.grsecurity_nixos_kmod ];
     extraConfig = callPackage ../os-specific/linux/kernel/grsecurity-nixos-config.nix { };
   };
 
@@ -12333,9 +12339,7 @@ in
 
   calcurse = callPackage ../applications/misc/calcurse { };
 
-  calibre = qt5.callPackage ../applications/misc/calibre {
-    inherit (pythonPackages) pyqt5 sip;
-  };
+  calibre = qt5.callPackage ../applications/misc/calibre { };
 
   camlistore = callPackage ../applications/misc/camlistore { };
 
@@ -14855,7 +14859,6 @@ in
 
   thunderbird = callPackage ../applications/networking/mailreaders/thunderbird {
     inherit (gnome2) libIDL;
-    inherit (pythonPackages) pysqlite;
     libpng = libpng_apng;
   };
 
