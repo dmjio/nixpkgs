@@ -6502,6 +6502,8 @@ in
 
   tcptrack = callPackage ../development/tools/misc/tcptrack { };
 
+  teensyduino = arduino-core.override { withGui = true; withTeensyduino = true; };
+
   teensy-loader-cli = callPackage ../development/tools/misc/teensy-loader-cli { };
 
   texinfo413 = callPackage ../development/tools/misc/texinfo/4.13a.nix { };
@@ -14502,6 +14504,7 @@ in
       urxvt_tabbedex
       urxvt_font_size
       urxvt_theme_switch
+      urxvt_vtwheel
     ];
   };
 
@@ -14511,6 +14514,7 @@ in
   urxvt_tabbedex = callPackage ../applications/misc/rxvt_unicode-plugins/urxvt-tabbedex { };
   urxvt_font_size = callPackage ../applications/misc/rxvt_unicode-plugins/urxvt-font-size { };
   urxvt_theme_switch = callPackage ../applications/misc/rxvt_unicode-plugins/urxvt-theme-switch { };
+  urxvt_vtwheel = callPackage ../applications/misc/rxvt_unicode-plugins/urxvt-vtwheel.nix { };
 
   uade123 = callPackage ../applications/audio/uade123 {};
 
@@ -14986,6 +14990,10 @@ in
 
   vim = callPackage ../applications/editors/vim {
     inherit (darwin.apple_sdk.frameworks) Carbon Cocoa;
+  };
+
+  vimiv = callPackage ../applications/graphics/vimiv {
+    inherit (gnome3) defaultIconTheme;
   };
 
   macvim = callPackage ../applications/editors/vim/macvim.nix { stdenv = clangStdenv; ruby = ruby_2_2; };
