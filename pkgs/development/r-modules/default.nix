@@ -288,7 +288,7 @@ let
     pbdNCDF4 = [ pkgs.netcdf ];
     pbdPROF = [ pkgs.openmpi ];
     PKI = [ pkgs.openssl ];
-    png = [ pkgs.libpng ];
+    png = [ pkgs.libpng.dev ];
     PopGenome = [ pkgs.zlib ];
     proj4 = [ pkgs.proj ];
     qtbase = [ pkgs.qt4 ];
@@ -340,7 +340,7 @@ let
     rzmq = [ pkgs.zeromq3 ];
     SAVE = [ pkgs.zlib pkgs.bzip2 pkgs.icu pkgs.lzma pkgs.pcre ];
     sdcTable = [ pkgs.gmp pkgs.glpk ];
-    seewave = [ pkgs.fftw pkgs.libsndfile ];
+    seewave = [ pkgs.fftw.dev pkgs.libsndfile.dev ];
     seqinr = [ pkgs.zlib ];
     seqminer = [ pkgs.zlib pkgs.bzip2 ];
     showtext = [ pkgs.zlib pkgs.libpng pkgs.icu pkgs.freetype ];
@@ -472,7 +472,6 @@ let
     "DeducerSurvival"
     "DeducerText"
     "Demerelate"
-    "DescTools"
     "detrendeR"
     "dgmb"
     "DivMelt"

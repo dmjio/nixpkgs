@@ -1,13 +1,13 @@
 { stdenv, fetchgit, bootPkgs, perl, gmp, ncurses, libiconv, binutils, coreutils
-, autoconf, automake, happy, alex, crossSystem, selfPkgs, cross ? null
+, autoconf, automake, happy, alex, python3, crossSystem, selfPkgs, cross ? null
 }:
 
 let
   inherit (bootPkgs) ghc;
 
-  commonBuildInputs = [ ghc perl autoconf automake happy alex ];
+  commonBuildInputs = [ ghc perl autoconf automake happy alex python3 ];
 
-  version = "8.1.20161115";
+  version = "8.1.20170106";
 
   commonPreConfigure =  ''
     sed -i -e 's|-isysroot /Developer/SDKs/MacOSX10.5.sdk||' configure
@@ -19,26 +19,25 @@ let
 in stdenv.mkDerivation (rec {
   inherit version;
   name = "ghc-${version}";
-  rev = "017d11e0a36866b05ace32ece1af11adf652a619";
+  rev = "b4f2afe70ddbd0576b4eba3f82ba1ddc52e9b3bd";
 
   src = fetchgit {
     url = "git://git.haskell.org/ghc.git";
     inherit rev;
-    sha256 = "1ryggmz961qd0fl50rkjjvi6g9azwla2vx9310a9nzjaj5x6ib4y";
+    sha256 = "1h064nikx5srsd7qvz19f6dxvnpfjp0b3b94xs1f4nar18hzf4j0";
   };
 
-  postPatch = ''
+  postPatch = "patchShebangs .";
+
+  preConfigure = ''
     echo ${version} >VERSION
     echo ${rev} >GIT_COMMIT_ID
-    patchShebangs .
     ./boot
-  '';
+  '' + commonPreConfigure ;
 
   buildInputs = commonBuildInputs;
 
   enableParallelBuilding = true;
-
-  preConfigure = commonPreConfigure;
 
   configureFlags = [
     "CC=${stdenv.cc}/bin/cc"
@@ -52,7 +51,11 @@ in stdenv.mkDerivation (rec {
   # that in turn causes GHCi to abort
   stripDebugFlags = [ "-S" ] ++ stdenv.lib.optional (!stdenv.isDarwin) "--keep-file-symbols";
 
+  checkTarget = "test";
+
   postInstall = ''
+    paxmark m $out/lib/${name}/bin/{ghc,haddock}
+
     # Install the bash completion file.
     install -D -m 444 utils/completion/ghc.bash $out/share/bash-completion/completions/ghc
 
@@ -82,9 +85,6 @@ in stdenv.mkDerivation (rec {
 
 } // stdenv.lib.optionalAttrs (cross != null) {
   name = "${cross.config}-ghc-${version}";
-
-  # Some fixes for cross-compilation to iOS. See https://phabricator.haskell.org/D2710 (D2711,D2712,D2713)
-  patches = [ ./D2710.patch ./D2711.patch ./D2712.patch ./D2713.patch ];
 
   preConfigure = commonPreConfigure + ''
     sed 's|#BuildFlavour  = quick-cross|BuildFlavour  = perf-cross|' mk/build.mk.sample > mk/build.mk

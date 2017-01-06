@@ -21,7 +21,7 @@
 , libiconv, postgresql, v8_3_16_14, clang, sqlite, zlib, imagemagick
 , pkgconfig , ncurses, xapian, gpgme, utillinux, fetchpatch, tzdata, icu, libffi
 , cmake, libssh2, openssl, mysql, darwin, git, perl, gecode_3, curl
-, libmsgpack, qt48, libsodium, snappy, libossp_uuid
+, libmsgpack, qt48, libsodium, snappy, libossp_uuid, lxc
 }@args:
 
 let
@@ -145,6 +145,10 @@ in
     buildInputs = [ imagemagick pkgconfig which ];
   };
 
+  ruby-lxc = attrs: {
+    buildInputs = [ lxc ];
+  };
+
   ruby-terminfo = attrs: {
     buildInputs = [ ncurses ];
     buildFlags = [
@@ -163,6 +167,10 @@ in
         sed -i -e "s/-arch i386//" Rakefile ext/scrypt/Rakefile
       '';
     } else {};
+
+  sequel_pg = attrs: {
+    buildInputs = [ postgresql ];
+  };
 
   snappy = attrs: {
     buildInputs = [ args.snappy ];

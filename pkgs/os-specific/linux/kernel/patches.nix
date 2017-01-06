@@ -25,10 +25,13 @@ let
     inherit grver kver grrev;
 
     patch = fetchurl {
-      # When updating versions/hashes, ALWAYS use the official version; we use
-      # this mirror only because upstream removes sources files immediately upon
-      # releasing a new version ...
-      url = "https://raw.githubusercontent.com/slashbeast/grsecurity-scrape/master/${grbranch}/${name}.patch";
+      urls = [
+        "https://grsecurity.net/${grbranch}/${name}.patch"
+        # When updating versions/hashes, ALWAYS use the official
+        # version; we use this mirror only because upstream removes
+        # source files immediately upon releasing a new version ...
+        "https://raw.githubusercontent.com/slashbeast/grsecurity-scrape/master/${grbranch}/${name}.patch"
+      ];
       inherit sha256;
     };
 
@@ -37,6 +40,12 @@ let
 in
 
 rec {
+
+  multithreaded_rsapubkey =
+    {
+      name = "multithreaded-rsapubkey-asn1.patch";
+      patch = ./multithreaded-rsapubkey-asn1.patch;
+    };
 
   bridge_stp_helper =
     { name = "bridge-stp-helper";
@@ -86,9 +95,9 @@ rec {
   };
 
   grsecurity_testing = grsecPatch
-    { kver   = "4.8.11";
-      grrev  = "201611271225";
-      sha256 = "12vcy030vxi7h2dxyikfj8cirrifk9j186dbc2vk45dv4flcxpac";
+    { kver   = "4.8.15";
+      grrev  = "201612301949";
+      sha256 = "1083r30ipvdi3kjixlsp3f1mmf7848f2p32ds956caarvr4vkm3b";
     };
 
   # This patch relaxes grsec constraints on the location of usermode helpers,
@@ -146,6 +155,33 @@ rec {
         url = "https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git"
             + "/patch/drivers/lguest/x86/core.c?id=cdd77e87eae52";
         sha256 = "04xlx6al10cw039av6jkby7gx64zayj8m1k9iza40sw0fydcfqhc";
+      };
     };
-  };
+
+  packet_fix_race_condition_CVE_2016_8655 =
+    { name = "packet_fix_race_condition_CVE_2016_8655.patch";
+      patch = fetchpatch {
+        url = "https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/patch/?id=84ac7260236a49c79eede91617700174c2c19b0c";
+        sha256 = "19viqjjgq8j8jiz5yhgmzwhqvhwv175q645qdazd1k69d25nv2ki";
+      };
+    };
+
+  panic_on_icmp6_frag_CVE_2016_9919 = rec
+    { name = "panic_on_icmp6_frag_CVE_2016_9919.patch";
+      patch = fetchpatch {
+        inherit name;
+        url = "https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/patch/?id=79dc7e3f1cd323be4c81aa1a94faa1b3ed987fb2";
+        sha256 = "0mps33r4mnwiy0bmgrzgqkrk59yya17v6kzpv9024g4xlz61rk8p";
+      };
+    };
+
+  p9_caching_4_4 = rec
+    { name = "9p-caching.patch";
+      patch = fetchpatch {
+        inherit name;
+        url = https://github.com/edolstra/linux/commit/d522582553368b9564e2d88a8d7b1d469bf98c65.patch;
+        sha256 = "01h7461pdgavd6ghd6w9wg136hkaca0mrmmzhy6s3phksksimbc2";
+      };
+    };
+
 }

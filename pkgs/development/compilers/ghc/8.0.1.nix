@@ -1,5 +1,5 @@
 { stdenv, fetchurl, fetchpatch, bootPkgs, perl, gmp, ncurses, libiconv, binutils, coreutils
-, hscolour, patchutils
+, hscolour, patchutils, sphinx
 }:
 
 let
@@ -29,7 +29,7 @@ stdenv.mkDerivation rec {
     (fetchFilteredPatch { url = https://git.haskell.org/ghc.git/patch/2f8cd14fe909a377b3e084a4f2ded83a0e6d44dd; sha256 = "06zvlgcf50ab58bw6yw3krn45dsmhg4cmlz4nqff8k4z1f1bj01v"; })
   ] ++ stdenv.lib.optional stdenv.isLinux ./ghc-no-madv-free.patch;
 
-  buildInputs = [ ghc perl hscolour ];
+  buildInputs = [ ghc perl hscolour sphinx];
 
   enableParallelBuilding = true;
 
@@ -57,6 +57,8 @@ stdenv.mkDerivation rec {
   stripDebugFlags = [ "-S" ] ++ stdenv.lib.optional (!stdenv.isDarwin) "--keep-file-symbols";
 
   postInstall = ''
+    paxmark m $out/lib/${name}/bin/{ghc,haddock}
+
     # Install the bash completion file.
     install -D -m 444 utils/completion/ghc.bash $out/share/bash-completion/completions/ghc
 
