@@ -30,6 +30,14 @@ following incompatible changes:</para>
 <itemizedlist>
   <listitem>
     <para>
+      <literal>stdenv.overrides</literal> is now expected to take <literal>self</literal>
+      and <literal>super</literal> arguments. See <literal>lib.trivial.extends</literal>
+      for what those parameters represent.
+    </para>
+  </listitem>
+
+  <listitem>
+    <para>
       <literal>gnome</literal> alias has been removed along with
       <literal>gtk</literal>, <literal>gtkmm</literal> and several others.
       Now you need to use versioned attributes, like <literal>gnome3</literal>.
@@ -76,6 +84,17 @@ following incompatible changes:</para>
      <literal>service.parsoid.wikis</literal> and is a list of either API URLs
      or attribute sets as specified in parsoid's documentation.
     </para>
+  </listitem>
+
+  <listitem>
+    <para>
+     <literal>Ntpd</literal> was replaced by
+     <literal>systemd-timesyncd</literal> as the default service to synchronize
+     system time with a remote NTP server. The old behavior can be restored by
+     setting <literal>services.ntp.enable</literal> to <literal>true</literal>.
+     Upstream time servers for all NTP implementations are now configured using
+     <literal>networking.timeServers</literal>.
+   </para>
   </listitem>
 </itemizedlist>
 

@@ -1,5 +1,5 @@
 { stdenv, fetchurl, fetchpatch, bootPkgs, perl, gmp, ncurses, libiconv, binutils, coreutils
-, hscolour, patchutils
+, hscolour, patchutils, sphinx
 }:
 
 let
@@ -9,29 +9,21 @@ let
     downloadToTemp = true;
     postFetch = ''
       ${patchutils}/bin/filterdiff --clean --strip-match=1 -x 'testsuite/*' "$downloadedFile" > "$out"
-    '';
+    ''; # fix syntax highlighting: */
   });
 in
 stdenv.mkDerivation rec {
-  version = "8.0.1.20161117";
+  version = "8.0.2";
   name = "ghc-${version}";
 
   src = fetchurl {
-    url = "https://downloads.haskell.org/~ghc/8.0.2-rc1/${name}-src.tar.xz";
-    sha256 = "08hpzvg059ha0knmlngd0winfkplkkb7dk88zfz3s177z38kd874";
+    url = "https://downloads.haskell.org/~ghc/8.0.2/${name}-src.tar.xz";
+    sha256 = "1c8qc4fhkycynk4g1f9hvk53dj6a1vvqi6bklqznns6hw59m8qhi";
   };
 
-  patches = [
-    ./ghc-HEAD-dont-pass-linker-flags-via-response-files.patch  # https://github.com/NixOS/nixpkgs/issues/10752
+  patches = [] ++ stdenv.lib.optional stdenv.isLinux ./ghc-no-madv-free.patch;
 
-    # Already applied?
-    # ./relocation.patch
-    # Fix https://ghc.haskell.org/trac/ghc/ticket/12130
-    # (fetchFilteredPatch { url = https://git.haskell.org/ghc.git/patch/4d71cc89b4e9648f3fbb29c8fcd25d725616e265; sha256 = "0syaxb4y4s2dc440qmrggb4vagvqqhb55m6mx12rip4i9qhxl8k0"; })
-    (fetchFilteredPatch { url = https://git.haskell.org/ghc.git/patch/2f8cd14fe909a377b3e084a4f2ded83a0e6d44dd; sha256 = "06zvlgcf50ab58bw6yw3krn45dsmhg4cmlz4nqff8k4z1f1bj01v"; })
-  ] ++ stdenv.lib.optional stdenv.isLinux ./ghc-no-madv-free.patch;
-
-  buildInputs = [ ghc perl hscolour ];
+  buildInputs = [ ghc perl hscolour sphinx ];
 
   enableParallelBuilding = true;
 
@@ -59,6 +51,8 @@ stdenv.mkDerivation rec {
   stripDebugFlags = [ "-S" ] ++ stdenv.lib.optional (!stdenv.isDarwin) "--keep-file-symbols";
 
   postInstall = ''
+    paxmark m $out/lib/${name}/bin/{ghc,haddock}
+
     # Install the bash completion file.
     install -D -m 444 utils/completion/ghc.bash $out/share/bash-completion/completions/ghc
 

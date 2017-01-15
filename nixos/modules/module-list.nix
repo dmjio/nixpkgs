@@ -66,11 +66,13 @@
   ./programs/bash/bash.nix
   ./programs/blcr.nix
   ./programs/cdemu.nix
+  ./programs/chromium.nix
   ./programs/command-not-found/command-not-found.nix
   ./programs/dconf.nix
   ./programs/environment.nix
   ./programs/fish.nix
   ./programs/freetds.nix
+  ./programs/gphoto2.nix
   ./programs/info.nix
   ./programs/java.nix
   ./programs/kbdlight.nix
@@ -133,9 +135,11 @@
   ./services/cluster/fleet.nix
   ./services/cluster/kubernetes.nix
   ./services/cluster/panamax.nix
+  ./services/computing/boinc/client.nix
   ./services/computing/torque/server.nix
   ./services/computing/torque/mom.nix
   ./services/computing/slurm/slurm.nix
+  ./services/continuous-integration/buildbot/master.nix
   ./services/continuous-integration/buildkite-agent.nix
   ./services/continuous-integration/hydra/default.nix
   ./services/continuous-integration/gitlab-runner.nix
@@ -282,6 +286,7 @@
   ./services/misc/siproxd.nix
   ./services/misc/sonarr.nix
   ./services/misc/spice-vdagentd.nix
+  ./services/misc/sssd.nix
   ./services/misc/subsonic.nix
   ./services/misc/sundtek.nix
   ./services/misc/svnserve.nix
@@ -290,6 +295,7 @@
   ./services/misc/uhub.nix
   ./services/misc/zookeeper.nix
   ./services/monitoring/apcupsd.nix
+  ./services/monitoring/arbtt.nix
   ./services/monitoring/bosun.nix
   ./services/monitoring/cadvisor.nix
   ./services/monitoring/collectd.nix
@@ -304,8 +310,13 @@
   ./services/monitoring/munin.nix
   ./services/monitoring/nagios.nix
   ./services/monitoring/prometheus/default.nix
-  ./services/monitoring/prometheus/node-exporter.nix
   ./services/monitoring/prometheus/alertmanager.nix
+  ./services/monitoring/prometheus/blackbox-exporter.nix
+  ./services/monitoring/prometheus/json-exporter.nix
+  ./services/monitoring/prometheus/nginx-exporter.nix
+  ./services/monitoring/prometheus/node-exporter.nix
+  ./services/monitoring/prometheus/snmp-exporter.nix
+  ./services/monitoring/prometheus/varnish-exporter.nix
   ./services/monitoring/riemann.nix
   ./services/monitoring/riemann-dash.nix
   ./services/monitoring/riemann-tools.nix
@@ -390,6 +401,7 @@
   ./services/networking/minidlna.nix
   ./services/networking/miniupnpd.nix
   ./services/networking/mosquitto.nix
+  ./services/networking/miredo.nix
   ./services/networking/mstpd.nix
   ./services/networking/murmur.nix
   ./services/networking/namecoind.nix
@@ -483,6 +495,7 @@
   ./services/security/torify.nix
   ./services/security/tor.nix
   ./services/security/torsocks.nix
+  ./services/system/cgmanager.nix
   ./services/system/cloud-init.nix
   ./services/system/dbus.nix
   ./services/system/kerberos.nix
@@ -617,6 +630,7 @@
   ./virtualisation/docker.nix
   ./virtualisation/libvirtd.nix
   ./virtualisation/lxc.nix
+  ./virtualisation/lxcfs.nix
   ./virtualisation/lxd.nix
   ./virtualisation/amazon-options.nix
   ./virtualisation/openvswitch.nix
@@ -627,4 +641,6 @@
   ./virtualisation/vmware-guest.nix
   ./virtualisation/xen-dom0.nix
   ./virtualisation/xe-guest-utilities.nix
+  ./virtualisation/openstack/keystone.nix
+  ./virtualisation/openstack/glance.nix
 ]

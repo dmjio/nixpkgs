@@ -57,7 +57,7 @@ let
       });
 
     kdeWrapper = import ./kde-wrapper.nix {
-      inherit (pkgs) stdenv lib makeWrapper;
+      inherit (pkgs) stdenv lib makeWrapper buildEnv;
     };
 
     attica = callPackage ./attica.nix {};
@@ -139,6 +139,7 @@ let
     plasma-framework = callPackage ./plasma-framework.nix {};
     solid = callPackage ./solid.nix {};
     sonnet = callPackage ./sonnet.nix {};
+    syntax-highlighting = callPackage ./syntax-highlighting.nix {};
     threadweaver = callPackage ./threadweaver.nix {};
   };
 

@@ -1,10 +1,11 @@
 { stdenv, fetchFromGitHub, cmake, gettext, libmsgpack, libtermkey
-, libtool, libuv, luajit, luaPackages, man, ncurses, perl, pkgconfig
+, libtool, libuv, luajit, luaPackages, ncurses, perl, pkgconfig
 , unibilium, makeWrapper, vimUtils, xsel, gperf
 
 , withPython ? true, pythonPackages, extraPythonPackages ? []
 , withPython3 ? true, python3Packages, extraPython3Packages ? []
 , withJemalloc ? true, jemalloc
+, withRuby ? true, bundlerEnv
 
 , withPyGUI ? false
 , vimAlias ? false
@@ -44,6 +45,14 @@ let
     };
   };
 
+  rubyEnv = bundlerEnv {
+    name = "neovim-ruby-env";
+    gemdir = ./ruby_provider;
+  };
+
+  rubyWrapper = ''--suffix PATH : \"${rubyEnv}/bin\" '' +
+                ''--suffix GEM_HOME : \"${rubyEnv}/${rubyEnv.ruby.gemPath}\" '';
+
   pythonEnv = pythonPackages.python.buildEnv.override {
     extraLibs = (
         if withPyGUI
@@ -52,11 +61,17 @@ let
       ) ++ extraPythonPackages;
     ignoreCollisions = true;
   };
+  pythonWrapper = ''--cmd \"let g:python_host_prog='$out/bin/nvim-python'\" '';
 
   python3Env = python3Packages.python.buildEnv.override {
     extraLibs = [ python3Packages.neovim ] ++ extraPython3Packages;
     ignoreCollisions = true;
   };
+  python3Wrapper = ''--cmd \"let g:python3_host_prog='$out/bin/nvim-python3'\" '';
+  pythonFlags = optionalString (withPython || withPython3) ''--add-flags "${
+    (optionalString withPython pythonWrapper) +
+    (optionalString withPython3 python3Wrapper)
+  }"'';
 
   neovim = stdenv.mkDerivation rec {
     name = "neovim-${version}";
@@ -103,10 +118,7 @@ let
     # triggers on buffer overflow bug while running tests
     hardeningDisable = [ "fortify" ];
 
-    preConfigure = ''
-      substituteInPlace runtime/autoload/man.vim \
-        --replace /usr/bin/man ${man}/bin/man
-    '' + stdenv.lib.optionalString stdenv.isDarwin ''
+    preConfigure = stdenv.lib.optionalString stdenv.isDarwin ''
       export DYLD_LIBRARY_PATH=${jemalloc}/lib
       substituteInPlace src/nvim/CMakeLists.txt --replace "    util" ""
     '';
@@ -124,13 +136,8 @@ let
         --prefix PATH : "$out/bin"
     '' + optionalString withPython3 ''
       ln -s ${python3Env}/bin/python3 $out/bin/nvim-python3
-    '' + optionalString (withPython || withPython3) ''
-        wrapProgram $out/bin/nvim --add-flags "${
-          (optionalString withPython
-            ''--cmd \"let g:python_host_prog='$out/bin/nvim-python'\" '') +
-          (optionalString withPython3
-            ''--cmd \"let g:python3_host_prog='$out/bin/nvim-python3'\" '')
-        }"
+    '' + optionalString (withPython || withPython3 || withRuby) ''
+      wrapProgram $out/bin/nvim ${rubyWrapper + pythonFlags}
     '';
 
     meta = {
@@ -157,7 +164,7 @@ let
 
 in if (vimAlias == false && configure == null) then neovim else stdenv.mkDerivation {
   name = "neovim-${neovim.version}-configured";
-  inherit (neovim) version;
+  inherit (neovim) version meta;
 
   nativeBuildInputs = [ makeWrapper ];
 

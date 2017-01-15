@@ -57,7 +57,7 @@ in
 
     networking.dnsExtensionMechanism = lib.mkOption {
       type = types.bool;
-      default = false;
+      default = true;
       description = ''
         Enable the <code>edns0</code> option in <filename>resolv.conf</filename>. With
         that option set, <code>glibc</code> supports use of the extension mechanisms for
@@ -81,6 +81,18 @@ in
       example = [ "ndots:1" "rotate" ];
       description = ''
         Set the options in <filename>/etc/resolv.conf</filename>.
+      '';
+    };
+
+    networking.timeServers = mkOption {
+      default = [
+        "0.nixos.pool.ntp.org"
+        "1.nixos.pool.ntp.org"
+        "2.nixos.pool.ntp.org"
+        "3.nixos.pool.ntp.org"
+      ];
+      description = ''
+        The set of NTP servers from which to synchronise.
       '';
     };
 
