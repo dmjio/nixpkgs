@@ -75,5 +75,4 @@ stdenv.mkDerivation rec {
     maintainers = with stdenv.lib.maintainers; [ marcweber andres peti ];
     inherit (ghc.meta) license platforms;
   };
-
 }
