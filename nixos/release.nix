@@ -273,6 +273,7 @@ in rec {
   tests.mysql = callTest tests/mysql.nix {};
   tests.mysqlReplication = callTest tests/mysql-replication.nix {};
   tests.nat.firewall = callTest tests/nat.nix { withFirewall = true; };
+  tests.nat.firewall-conntrack = callTest tests/nat.nix { withFirewall = true; withConntrackHelpers = true; };
   tests.nat.standalone = callTest tests/nat.nix { withFirewall = false; };
   tests.networking.networkd = callSubTests tests/networking.nix { networkd = true; };
   tests.networking.scripted = callSubTests tests/networking.nix { networkd = false; };
@@ -324,8 +325,8 @@ in rec {
 
     kde = makeClosure ({ pkgs, ... }:
       { services.xserver.enable = true;
-        services.xserver.displayManager.kdm.enable = true;
-        services.xserver.desktopManager.kde4.enable = true;
+        services.xserver.displayManager.sddm.enable = true;
+        services.xserver.desktopManager.kde5.enable = true;
       });
 
     xfce = makeClosure ({ pkgs, ... }:

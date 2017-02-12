@@ -46,8 +46,8 @@ stdenv.mkDerivation {
                 makeWrapper "$drv/$t" "$out/$t" \
                     --argv0 '"$0"' \
                     --suffix PATH : "$env/bin" \
-                    --prefix XDG_CONFIG_DIRS : "$env/share" \
-                    --prefix XDG_DATA_DIRS : "$env/etc/xdg" \
+                    --prefix XDG_CONFIG_DIRS : "$env/etc/xdg" \
+                    --prefix XDG_DATA_DIRS : "$env/share" \
                     --set QML_IMPORT_PATH "$env/lib/qt5/imports" \
                     --set QML2_IMPORT_PATH "$env/lib/qt5/qml" \
                     --set QT_PLUGIN_PATH "$env/lib/qt5/plugins"
@@ -61,13 +61,7 @@ stdenv.mkDerivation {
         fi
     done
 
-    ln -s "$env/share" "$out"
-
-    for drv in $unwrapped; do
-        if [ -a "$drv/nix-support/propagated-user-env-packages" ]; then
-            mkdir -p "$out/nix-support"
-            cat "$drv/nix-support/propagated-user-env-packages" >> "$out/nix-support/propagated-user-env-packages"
-        fi
-    done
+    mkdir -p "$out/nix-support"
+    echo "$unwrapped" > "$out/nix-support/propagated-user-env-packages"
   '';
 }

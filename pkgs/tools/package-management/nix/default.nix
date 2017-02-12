@@ -103,21 +103,21 @@ in rec {
   nix = nixStable;
 
   nixStable = common rec {
-    name = "nix-1.11.5";
+    name = "nix-1.11.6";
     src = fetchurl {
       url = "http://nixos.org/releases/nix/${name}/${name}.tar.xz";
-      sha256 = "272361d091c735b0e80627fa23fb7c600957472301dd7e54d237069452f3addb";
+      sha256 = "e729d55a9276756108a56bc1cbe2e182ee2e4be2b59b1c77d5f0e3edd879b2a3";
     };
   };
 
   nixUnstable = lib.lowPrio (common rec {
     name = "nix-1.12${suffix}";
-    suffix = "pre4911_b30d1e7";
+    suffix = "pre4997_1351b0d";
     src = fetchFromGitHub {
       owner = "NixOS";
       repo = "nix";
-      rev = "b30d1e7ada0a8fbaacc25e24e5e788d18bfe8d3c";
-      sha256 = "04j6aw2bi3k7m5jyqwn1vrf78br5kdfpjsj15b5r5lvxdqhlknvm";
+      rev = "1351b0df87a0984914769c5dc76489618b3a3fec";
+      sha256 = "09zvphzik9pypi1bnjs0v83qwgl5cfb5w0c788jlr5wbd8x3crv1";
     };
     fromGit = true;
   });

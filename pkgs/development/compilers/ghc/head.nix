@@ -1,5 +1,10 @@
-{ stdenv, fetchgit, bootPkgs, perl, gmp, ncurses, libiconv, binutils, coreutils
-, autoconf, automake, happy, alex, python3, crossSystem, selfPkgs, cross ? null
+{ stdenv, fetchgit, bootPkgs, perl, ncurses, libiconv, binutils, coreutils
+, autoconf, automake, happy, alex, python3, buildPlatform, targetPlatform
+, selfPkgs, cross ? null
+
+  # If enabled GHC will be build with the GPL-free but slower integer-simple
+  # library instead of the faster but GPLed integer-gmp library.
+, enableIntegerSimple ? false, gmp
 }:
 
 let
@@ -8,18 +13,23 @@ let
   commonBuildInputs = [ ghc perl autoconf automake happy alex python3 ];
 
   version = "8.1.20170106";
+  rev = "b4f2afe70ddbd0576b4eba3f82ba1ddc52e9b3bd";
 
   commonPreConfigure =  ''
+    echo ${version} >VERSION
+    echo ${rev} >GIT_COMMIT_ID
+    ./boot
     sed -i -e 's|-isysroot /Developer/SDKs/MacOSX10.5.sdk||' configure
   '' + stdenv.lib.optionalString (!stdenv.isDarwin) ''
     export NIX_LDFLAGS="$NIX_LDFLAGS -rpath $out/lib/ghc-${version}"
   '' + stdenv.lib.optionalString stdenv.isDarwin ''
     export NIX_LDFLAGS+=" -no_dtrace_dof"
+  '' + stdenv.lib.optionalString enableIntegerSimple ''
+    echo "INTEGER_LIBRARY=integer-simple" > mk/build.mk
   '';
 in stdenv.mkDerivation (rec {
-  inherit version;
+  inherit version rev;
   name = "ghc-${version}";
-  rev = "b4f2afe70ddbd0576b4eba3f82ba1ddc52e9b3bd";
 
   src = fetchgit {
     url = "git://git.haskell.org/ghc.git";
@@ -29,11 +39,7 @@ in stdenv.mkDerivation (rec {
 
   postPatch = "patchShebangs .";
 
-  preConfigure = ''
-    echo ${version} >VERSION
-    echo ${rev} >GIT_COMMIT_ID
-    ./boot
-  '' + commonPreConfigure ;
+  preConfigure = commonPreConfigure;
 
   buildInputs = commonBuildInputs;
 
@@ -41,8 +47,9 @@ in stdenv.mkDerivation (rec {
 
   configureFlags = [
     "CC=${stdenv.cc}/bin/cc"
-    "--with-gmp-includes=${gmp.dev}/include" "--with-gmp-libraries=${gmp.out}/lib"
     "--with-curses-includes=${ncurses.dev}/include" "--with-curses-libraries=${ncurses.out}/lib"
+  ] ++ stdenv.lib.optional (! enableIntegerSimple) [
+    "--with-gmp-includes=${gmp.dev}/include" "--with-gmp-libraries=${gmp.out}/lib"
   ] ++ stdenv.lib.optional stdenv.isDarwin [
     "--with-iconv-includes=${libiconv}/include" "--with-iconv-libraries=${libiconv}/lib"
   ];
@@ -69,9 +76,9 @@ in stdenv.mkDerivation (rec {
 
   passthru = {
     inherit bootPkgs;
-  } // stdenv.lib.optionalAttrs (crossSystem != null) {
+  } // stdenv.lib.optionalAttrs (targetPlatform != buildPlatform) {
     crossCompiler = selfPkgs.ghc.override {
-      cross = crossSystem;
+      cross = targetPlatform;
       bootPkgs = selfPkgs;
     };
   };

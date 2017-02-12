@@ -1,15 +1,18 @@
-{ stdenv, fetchurl, kubernetes }:
+{ stdenv, lib, fetchurl, makeWrapper, docker-machine-kvm, kubernetes, libvirt, qemu }:
+
 let
   arch = if stdenv.isLinux
          then "linux-amd64"
          else "darwin-amd64";
   checksum = if stdenv.isLinux
-             then "17r8w4lvj7fhh7qppi9z5i2fpqqry4s61zjr9zmsbybc5flnsw2j"
-             else "0jf0kd1mm35qcf0ydr5yyzfq6qi8ifxchvpjsydb1gm1kikp5g3p";
-in
-stdenv.mkDerivation rec {
+             then "0njx4vzr0cpr3dba08w0jrlpfb8qrmxq5lqfrk3qrx29x5y6i6hi"
+             else "0i21m1pys6rdxcwsk987l08lhzpcbg4bdrznaam02g6jj6jxvq0x";
+
+# TODO: compile from source
+
+in stdenv.mkDerivation rec {
   pname = "minikube";
-  version = "0.13.1";
+  version = "0.16.0";
   name = "${pname}-${version}";
 
   src = fetchurl {
@@ -17,29 +20,24 @@ stdenv.mkDerivation rec {
     sha256 = "${checksum}";
   };
 
-  buildInputs = [ ];
+  phases = [ "installPhase" ];
 
-  propagatedBuildInputs = [ kubernetes ];
+  buildInputs = [ makeWrapper ];
 
-  phases = [ "buildPhase" "installPhase" ];
-
-  buildPhase = ''
-    mkdir -p $out/bin
-  '';
+  binPath = lib.makeBinPath [ docker-machine-kvm kubernetes libvirt qemu ];
 
   installPhase = ''
-    cp $src $out/bin/${pname}
-    chmod +x $out/bin/${pname}
+    install -Dm755 ${src} $out/bin/${pname}
 
-    mkdir -p $out/share/bash-completion/completions/
-    HOME=$(pwd) $out/bin/minikube completion bash > $out/share/bash-completion/completions/minikube
+    wrapProgram $out/bin/${pname} \
+      --prefix PATH : ${binPath}
   '';
 
   meta = with stdenv.lib; {
     homepage = https://github.com/kubernetes/minikube;
     description = "A tool that makes it easy to run Kubernetes locally";
     license = licenses.asl20;
-    maintainers = [ maintainers.ebzzry ];
-    platforms = platforms.linux ++ platforms.darwin;
+    maintainers = with maintainers; [ ebzzry ];
+    platforms = with platforms; linux ++ darwin;
   };
 }
