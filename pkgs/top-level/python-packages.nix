@@ -12,14 +12,14 @@ let
 let
   pythonAtLeast = versionAtLeast python.pythonVersion;
   pythonOlder = versionOlder python.pythonVersion;
-  isPy26 = python.majorVersion == "2.6";
-  isPy27 = python.majorVersion == "2.7";
-  isPy33 = python.majorVersion == "3.3";
-  isPy34 = python.majorVersion == "3.4";
-  isPy35 = python.majorVersion == "3.5";
-  isPy36 = python.majorVersion == "3.6";
+  isPy26 = python.pythonVersion == "2.6";
+  isPy27 = python.pythonVersion == "2.7";
+  isPy33 = python.pythonVersion == "3.3";
+  isPy34 = python.pythonVersion == "3.4";
+  isPy35 = python.pythonVersion == "3.5";
+  isPy36 = python.pythonVersion == "3.6";
   isPyPy = python.executable == "pypy";
-  isPy3k = strings.substring 0 1 python.majorVersion == "3";
+  isPy3k = strings.substring 0 1 python.pythonVersion == "3";
 
   callPackage = pkgs.newScope self;
 
@@ -94,6 +94,8 @@ in {
       homepage = https://github.com/python-acoustics/python-acoustics;
     };
   };
+
+  aenum = callPackage ../development/python-modules/aenum { };
 
   agate = buildPythonPackage rec {
     name = "agate-1.2.2";
@@ -331,8 +333,9 @@ in {
   pysideTools = callPackage ../development/python-modules/pyside/tools.nix { };
 
   pytimeparse = buildPythonPackage rec {
-    name = "pytimeparse-1.1.5";
-    disabled = isPy3k;
+    pname = "pytimeparse";
+    version = "1.1.6";
+    name = "${pname}-${version}";
 
     meta = {
       description = "A small Python library to parse various kinds of time expressions";
@@ -343,9 +346,9 @@ in {
 
     propagatedBuildInputs = with self; [ nose ];
 
-    src = pkgs.fetchurl {
-      url = "mirror://pypi/p/pytimeparse/${name}.tar.gz";
-      sha256 = "01xj31m5brydm4gvc6lwx26r74903wvm1jx3g05633k3mqlvvpcs";
+    src = fetchPypi {
+      inherit pname version;
+      sha256 = "0imbb68i5n5fm704gv47if1blpxd4f8g16qmp5ar07cavgh2mibl";
     };
   };
 
@@ -551,13 +554,13 @@ in {
   };
 
   afew = buildPythonPackage rec {
-    rev = "b19a88fa1c06cc03ed6c636475cf4361b616d128";
-    name = "afew-git-2016-02-29";
+    name = "afew-git-2017-02-08";
 
-    src = pkgs.fetchurl {
-      url = "https://github.com/teythoon/afew/tarball/${rev}";
-      name = "${name}.tar.bz";
-      sha256 = "0idlyrk29bmjw3w74vn0c1a6s59phx9zhzghf2cpyqf9qdhxib8k";
+    src = pkgs.fetchFromGitHub {
+      owner = "afewmail";
+      repo = "afew";
+      rev = "889a3b966835c4d16aa1f24bb89f12945b9b2a67";
+      sha256 = "01gwrx1m3ka13ps3vj04a3y8llli2j2vkd3gcggcvxdphhpysckm";
     };
 
     buildInputs = with self; [ pkgs.dbacl ];
@@ -1543,6 +1546,10 @@ in {
 
     propagatedBuildInputs = with self; [ unidecode regex ];
 
+    checkPhase = ''
+      ${python.interpreter} -m unittest discover
+    '';
+
     meta = with stdenv.lib; {
       homepage = "https://github.com/dimka665/awesome-slugify";
       description = "Python flexible slugify function";
@@ -1600,10 +1607,10 @@ in {
         sha256 = "1pw9lrdjl24n6lrs6lnqpyiyic8bdxgvhyqvb2rx6kkbjrfhhgv5";
         url = "mirror://pypi/a/aws-shell/aws-shell-${version}.tar.gz";
       };
+
     # Why does it propagate packages that are used for testing?
     propagatedBuildInputs = with self; [
-      configobj prompt_toolkit awscli boto3 pygments mock pytest
-      pytestcov unittest2 tox
+      awscli prompt_toolkit boto3 configobj pygments
     ];
 
     #Checks are failing due to missing TTY, which won't exist.
@@ -1706,6 +1713,11 @@ in {
       url = mirror://pypi/a/azure-mgmt-compute/azure-mgmt-compute-0.20.0.zip;
       sha256 = "12hr5vxdg2sk2fzr608a37f4i8nbchca7dgdmly2w5fc7x88jx2v";
     };
+    preConfigure = ''
+      # Patch to make this package work on requests >= 2.11.x
+      # CAN BE REMOVED ON NEXT PACKAGE UPDATE
+      sed -i 's|len(request_content)|str(len(request_content))|' azure/mgmt/compute/computemanagement.py
+    '';
     postInstall = ''
       echo "__import__('pkg_resources').declare_namespace(__name__)" >> "$out/lib/${python.libPrefix}"/site-packages/azure/__init__.py
       echo "__import__('pkg_resources').declare_namespace(__name__)" >> "$out/lib/${python.libPrefix}"/site-packages/azure/mgmt/__init__.py
@@ -1726,6 +1738,11 @@ in {
       url = mirror://pypi/a/azure-mgmt-network/azure-mgmt-network-0.20.1.zip;
       sha256 = "10vj22h6nxpw0qpvib5x2g6qs5j8z31142icvh4qk8k40fcrs9hx";
     };
+    preConfigure = ''
+      # Patch to make this package work on requests >= 2.11.x
+      # CAN BE REMOVED ON NEXT PACKAGE UPDATE
+      sed -i 's|len(request_content)|str(len(request_content))|' azure/mgmt/network/networkresourceprovider.py
+    '';
     postInstall = ''
       echo "__import__('pkg_resources').declare_namespace(__name__)" >> "$out/lib/${python.libPrefix}"/site-packages/azure/__init__.py
       echo "__import__('pkg_resources').declare_namespace(__name__)" >> "$out/lib/${python.libPrefix}"/site-packages/azure/mgmt/__init__.py
@@ -1762,6 +1779,11 @@ in {
       url = mirror://pypi/a/azure-mgmt-resource/azure-mgmt-resource-0.20.1.zip;
       sha256 = "0slh9qfm5nfacrdm3lid0sr8kwqzgxvrwf27laf9v38kylkfqvml";
     };
+    preConfigure = ''
+      # Patch to make this package work on requests >= 2.11.x
+      # CAN BE REMOVED ON NEXT PACKAGE UPDATE
+      sed -i 's|len(request_content)|str(len(request_content))|' azure/mgmt/resource/resourcemanagement.py
+    '';
     postInstall = ''
       echo "__import__('pkg_resources').declare_namespace(__name__)" >> "$out/lib/${python.libPrefix}"/site-packages/azure/__init__.py
       echo "__import__('pkg_resources').declare_namespace(__name__)" >> "$out/lib/${python.libPrefix}"/site-packages/azure/mgmt/__init__.py
@@ -1782,6 +1804,11 @@ in {
       url = mirror://pypi/a/azure-mgmt-storage/azure-mgmt-storage-0.20.0.zip;
       sha256 = "16iw7hqhq97vlzfwixarfnirc60l5mz951p57brpcwyylphl3yim";
     };
+    preConfigure = ''
+      # Patch to make this package work on requests >= 2.11.x
+      # CAN BE REMOVED ON NEXT PACKAGE UPDATE
+      sed -i 's|len(request_content)|str(len(request_content))|' azure/mgmt/storage/storagemanagement.py
+    '';
     postInstall = ''
       echo "__import__('pkg_resources').declare_namespace(__name__)" >> "$out/lib/${python.libPrefix}"/site-packages/azure/__init__.py
       echo "__import__('pkg_resources').declare_namespace(__name__)" >> "$out/lib/${python.libPrefix}"/site-packages/azure/mgmt/__init__.py
@@ -3121,12 +3148,9 @@ in {
     '';
 
     meta = {
-      homepage = https://github.com/boto3/boto;
-
+      homepage = https://github.com/boto/boto3;
       license = stdenv.lib.licenses.asl20;
-
       description = "AWS SDK for Python";
-
       longDescription = ''
         Boto3 is the Amazon Web Services (AWS) Software Development Kit (SDK) for
         Python, which allows Python developers to write software that makes use of
@@ -4492,11 +4516,11 @@ in {
   cryptography = buildPythonPackage rec {
     # also bump cryptography_vectors
     name = "cryptography-${version}";
-    version = "1.5.3";
+    version = "1.7.2";
 
     src = pkgs.fetchurl {
       url = "mirror://pypi/c/cryptography/${name}.tar.gz";
-      sha256 = "cf82ddac919b587f5e44247579b433224cc2e03332d2ea4d89aa70d7e6b64ae5";
+      sha256 = "1ad9zmzi31fnz31qfchxcwiydvlxq88xndlgsvzr7m537n5vd347";
     };
 
     buildInputs = [ pkgs.openssl self.pretend self.cryptography_vectors
@@ -4513,11 +4537,11 @@ in {
   cryptography_vectors = buildPythonPackage rec {
       # also bump cryptography
     name = "cryptography_vectors-${version}";
-    version = "1.5.3";
+    version = "1.7.2";
 
     src = pkgs.fetchurl {
       url = "mirror://pypi/c/cryptography-vectors/${name}.tar.gz";
-      sha256 = "e513fecd146a844da19022abd1b4dfbf3335c1941464988f501d7a16f30acdae";
+      sha256 = "1p5cw3dzgcpzmp81qb9860hn9qlcvr4rnf0fy31fbvhxl7lfxr2b";
     };
   };
 
@@ -5626,6 +5650,8 @@ in {
     };
   };
 
+  leather = callPackage ../development/python-modules/leather { };
+
   libtmux = buildPythonPackage rec {
     name = "libtmux-${version}";
     version = "0.6.0";
@@ -6457,27 +6483,28 @@ in {
     };
   };
 
-  urllib3 = buildPythonPackage rec {
-    name = "urllib3-1.12";
+  urllib3 = let
+    disabled_tests = [
+      "test_headers" "test_headerdict" "test_can_validate_ip_san" "test_delayed_body_read_timeout"
+      "test_timeout_errors_cause_retries" "test_select_multiple_interrupts_with_event"
+    ];
+  in buildPythonPackage rec {
+    pname = "urllib3";
+    version = "1.20";
+    name = "${pname}-${version}";
 
-    src = pkgs.fetchurl {
-      url = "mirror://pypi/u/urllib3/${name}.tar.gz";
-      sha256 = "1ikj72kd4cdcq7pmmcd5p6s9dvp7wi0zw01635v4xzkid5vi598f";
+    src = fetchPypi {
+      inherit pname version;
+      sha256 = "0bx76if7shzlyykmaj4fhjkir5bswc4fdx5r4q0lrn3q51p2pvwp";
     };
 
-    doCheck = !isPy3k;  # lots of transient failures
-    checkPhase = ''
-      # Not worth the trouble
-      rm test/with_dummyserver/test_poolmanager.py
-      rm test/with_dummyserver/test_proxy_poolmanager.py
-      rm test/with_dummyserver/test_socketlevel.py
-      # pypy: https://github.com/shazow/urllib3/issues/736
-      rm test/with_dummyserver/test_connectionpool.py
+    NOSE_EXCLUDE=concatStringsSep "," disabled_tests;
 
+    checkPhase = ''
       nosetests -v --cover-min-percentage 1
     '';
 
-    buildInputs = with self; [ coverage tornado mock nose ];
+    buildInputs = with self; [ coverage tornado mock nose psutil pysocks ];
 
     meta = {
       description = "A Python library for Dropbox's HTTP-based Core and Datastore APIs";
@@ -7713,15 +7740,16 @@ in {
 
   ipfsapi = buildPythonPackage rec {
     name = "ipfsapi-${version}";
-    version = "0.4.0";
+    version = "0.4.5-pre";
     disabled = isPy26 || isPy27;
 
-    src = pkgs.fetchurl {
-      url = "mirror://pypi/i/ipfsapi/${name}.tar.gz";
-      sha256 = "0mqqsihannxzaqi8zcj9nca7fxwg1c85bp7xxic3xqa5zslcdcc3";
+    src = pkgs.fetchFromGitHub {
+      owner = "ipfs";
+      repo = "py-ipfs-api";
+      rev = "bcce00e4a9b674d062729d82bd49a9ffbf76486f";
+      sha256 = "0cdmzpk5wvi6fyfmmn96vynqkb1p59wjqjdijhm1ixf7bfl9r126";
     };
 
-    buildInputs = with self; [ pkgs.pandoc ];
     propagatedBuildInputs = with self; [ six requests2 ];
 
     meta = {
@@ -9426,8 +9454,8 @@ in {
 
     buildInputs = with self; [ nose sphinx numpydoc ];
 
-    # Failing test on Python 3.x
-    postPatch = '''' + optionalString isPy3k ''
+    # Failing test on Python 3.x and Darwin
+    postPatch = '''' + optionalString (isPy3k || stdenv.isDarwin) ''
       sed -i -e '70,84d' joblib/test/test_format_stack.py
       # test_nested_parallel_warnings: ValueError: Non-zero return code: -9.
       # Not sure why but it's nix-specific. Try removing for new joblib releases.
@@ -10966,15 +10994,20 @@ in {
   };
 
   enum34 = if pythonAtLeast "3.4" then null else buildPythonPackage rec {
-    name = "enum34-${version}";
-    version = "1.0.4";
+    pname = "enum34";
+    version = "1.1.6";
+    name = "${pname}-${version}";
 
-    src = pkgs.fetchurl {
-      url = "mirror://pypi/e/enum34/${name}.tar.gz";
-      sha256 = "0iz4jjdvdgvfllnpmd92qxj5fnfxqpgmjpvpik0jjim3lqk9zhfk";
+    src = fetchPypi {
+      inherit pname version;
+      sha256 = "8ad8c4783bf61ded74527bffb48ed9b54166685e4230386a9ed9b1279e2df5b1";
     };
 
     buildInputs = optional isPy26 self.ordereddict;
+    checkPhase = ''
+      ${python.interpreter} -m unittest discover
+    '';
+
 
     meta = {
       homepage = https://pypi.python.org/pypi/enum34;
@@ -11882,7 +11915,6 @@ in {
       downloadPage = https://github.com/PythonCharmers/python-future/releases;
       license = licenses.mit;
       maintainers = with maintainers; [ prikhi ];
-      platforms = platforms.linux;
     };
   };
 
@@ -14260,6 +14292,7 @@ in {
   matplotlib = callPackage ../development/python-modules/matplotlib/default.nix {
     stdenv = if stdenv.isDarwin then pkgs.clangStdenv else pkgs.stdenv;
     enableGhostscript = true;
+    inherit (pkgs.darwin.apple_sdk.frameworks) Cocoa;
   };
 
 
@@ -15552,13 +15585,13 @@ in {
 
   slixmpp = buildPythonPackage rec {
     name = "slixmpp-${version}";
-    version = "1.2.1";
+    version = "1.2.4.post1";
 
     disabled = pythonOlder "3.4";
 
     src = pkgs.fetchurl {
       url = "mirror://pypi/s/slixmpp/${name}.tar.gz";
-      sha256 = "0fwngxf2pnmpk8vhv4pfxvl1ya3nxr4kc2z6jrh2imynbry3xfj9";
+      sha256 = "0v6430dczai8a2nmznhja2dxl6pxa8c5j20nhc5737bqjg7245jk";
     };
 
     patchPhase = ''
@@ -18116,11 +18149,11 @@ in {
 
   parsel = buildPythonPackage rec {
     name = "parsel-${version}";
-    version = "1.0.3";
+    version = "1.1.0";
 
     src = pkgs.fetchurl {
       url = "mirror://pypi/p/parsel/${name}.tar.gz";
-      sha256 = "9c12c370feda864c2f541cecce9bfb3a2a682c6c59c097a852e7b040dc6b8431";
+      sha256 = "0a34d1c0bj1fzb5dk5744m2ag6v3b8glk4xp0amqxdan9ldbcd97";
     };
 
     buildInputs = with self; [ pytest pytestrunner ];
@@ -21435,11 +21468,11 @@ in {
 
   pyopenssl = buildPythonPackage rec {
     name = "pyopenssl-${version}";
-    version = "16.1.0";
+    version = "16.2.0";
 
     src = pkgs.fetchurl {
       url = "mirror://pypi/p/pyOpenSSL/pyOpenSSL-${version}.tar.gz";
-      sha256 = "88f7ada2a71daf2c78a4f139b19d57551b4c8be01f53a1cb5c86c2f3bf01355f";
+      sha256 = "0vji4yrfshs15xpczbhzhasnjrwcarsqg87n98ixnyafnyxs6ybp";
     };
 
     preCheck = ''
@@ -25335,6 +25368,7 @@ in {
       homepage = http://taskcoach.org/;
       description = "Todo manager to keep track of personal tasks and todo lists";
       license = licenses.gpl3Plus;
+      broken = stdenv.isDarwin;
     };
   };
 
@@ -26307,14 +26341,17 @@ in {
     # # 1.0.0 and up create a circle dependency with traceback2/pbr
     doCheck = false;
 
-    patchPhase = ''
+    postPatch = ''
+      # argparse is needed for python < 2.7, which we do not support anymore.
+      substituteInPlace setup.py --replace "argparse"
+
       # # fixes a transient error when collecting tests, see https://bugs.launchpad.net/python-neutronclient/+bug/1508547
       sed -i '510i\        return None, False' unittest2/loader.py
       # https://github.com/pypa/packaging/pull/36
       sed -i 's/version=VERSION/version=str(VERSION)/' setup.py
     '';
 
-    propagatedBuildInputs = with self; [ six argparse traceback2 ];
+    propagatedBuildInputs = with self; [ six traceback2 ];
 
     meta = {
       description = "A backport of the new features added to the unittest testing framework";
@@ -28090,6 +28127,10 @@ EOF
     '';
 
     buildInputs = with self; [ pytest pkgs.glibcLocales ];
+  };
+
+  libasyncns = callPackage ../development/python-modules/libasyncns.nix {
+    inherit (pkgs) libasyncns pkgconfig;
   };
 
   pybrowserid = buildPythonPackage rec {
@@ -30166,7 +30207,7 @@ EOF
 
   poezio = buildPythonApplication rec {
     name = "poezio-${version}";
-    version = "0.10";
+    version = "0.11";
 
     disabled = pythonOlder "3.4";
 
@@ -30174,13 +30215,12 @@ EOF
     propagatedBuildInputs = with self ; [ aiodns slixmpp pyinotify potr mpd2 ];
 
     src = pkgs.fetchurl {
-      url = "http://dev.louiz.org/attachments/download/102/${name}.tar.gz";
-      sha256 = "1mm0c3250p0kh7lmmjlp05hbc7byn9lknafgb906xmp4vx1p4kjn";
+      url = "http://dev.louiz.org/attachments/download/118/${name}.tar.gz";
+      sha256 = "07cn3717swarjv47yw8x95bvngz4nvlyyy9m7ck9fhycjgdy82r0";
     };
 
     patches = [
       ../development/python-modules/poezio/fix_gnupg_import.patch
-      ../development/python-modules/poezio/fix_plugins_imports.patch
     ];
 
     checkPhase = ''
@@ -30904,13 +30944,13 @@ EOF
 
   w3lib = buildPythonPackage rec {
     name = "w3lib-${version}";
-    version = "1.14.2";
+    version = "1.17.0";
 
     buildInputs = with self ; [ six pytest ];
 
     src = pkgs.fetchurl {
       url = "mirror://pypi/w/w3lib/${name}.tar.gz";
-      sha256 = "bd87eae62d208eef70869951abf05e96a8ee559714074a485168de4c5b190004";
+      sha256 = "0vshh300ay5wn5hwl9qcb32m71pz5s6miy0if56vm4nggy159inq";
     };
 
     meta = {
@@ -30969,35 +31009,8 @@ EOF
     };
   };
 
-  scrapy = buildPythonPackage rec {
-    name = "Scrapy-${version}";
-    version = "1.1.2";
+  scrapy = callPackage ../development/python-modules/scrapy { };
 
-    buildInputs = with self; [ pkgs.glibcLocales mock pytest botocore testfixtures pillow ];
-    propagatedBuildInputs = with self; [
-      six twisted w3lib lxml cssselect queuelib pyopenssl service-identity parsel pydispatcher
-    ];
-
-    LC_ALL="en_US.UTF-8";
-
-    checkPhase = ''
-      py.test --ignore=tests/test_linkextractors_deprecated.py --ignore=tests/test_proxy_connect.py
-      # The ignored tests require mitmproxy, which depends on protobuf, but it's disabled on Python3
-    '';
-
-    src = pkgs.fetchurl {
-      url = "mirror://pypi/S/Scrapy/${name}.tar.gz";
-      sha256 = "a0a8c7bccbd598d2731ec9f267b8efbd8fb99767f826f8f2924a5610707a03d4";
-    };
-
-    meta = {
-      description = "A fast high-level web crawling and web scraping framework, used to crawl websites and extract structured data from their pages";
-      homepage = "http://scrapy.org/";
-      license = licenses.bsd3;
-      maintainers = with maintainers; [ drewkett ];
-      platforms = platforms.linux;
-    };
-  };
   pandocfilters = buildPythonPackage rec{
     version = "1.4.1";
     pname = "pandocfilters";
@@ -31066,27 +31079,7 @@ EOF
     };
   };
 
-  Keras = buildPythonPackage rec {
-    name = "Keras-${version}";
-    version = "1.0.3";
-    disabled = isPy3k;
-
-    src = pkgs.fetchurl {
-      url = "mirror://pypi/k/keras/${name}.tar.gz";
-      sha256 = "0wi826bvifvy12w490ghj1g45z5xb83q2cadqh425sg56p98khaq";
-    };
-
-    propagatedBuildInputs = with self; [
-      six Theano pyyaml
-    ];
-
-    meta = {
-      description = "Deep Learning library for Theano and TensorFlow";
-      homepage = "https://keras.io";
-      license = licenses.mit;
-      maintainers = with maintainers; [ NikolaMandic ];
-    };
-  };
+  Keras = callPackage ../development/python-modules/keras { };
 
   Lasagne = buildPythonPackage rec {
     name = "Lasagne-${version}";
@@ -31209,78 +31202,11 @@ EOF
     };
   };
 
-  # tensorflow is built from a downloaded wheel, because the upstream
-  # project's build system is an arcane beast based on
-  # bazel. Untangling it and building the wheel from source is an open
-  # problem.
+  tensorflow = self.tensorflowWithoutCuda;
 
-  tensorflow = self.tensorflowNoGpuSupport;
+  tensorflowWithoutCuda = callPackage ../development/python-modules/tensorflow { };
 
-  tensorflowNoGpuSupport = buildPythonPackage rec {
-    name = "tensorflow";
-    version = "0.10.0";
-    format = "wheel";
-
-    src = pkgs.fetchurl {
-      url = if stdenv.isDarwin then
-        "https://storage.googleapis.com/tensorflow/mac/cpu/tensorflow-${version}-py2-none-any.whl" else
-        "https://storage.googleapis.com/tensorflow/linux/cpu/tensorflow-${version}-cp27-none-linux_x86_64.whl";
-      sha256 = if stdenv.isDarwin then
-        "1gjybh3j3rn34bzhsxsfdbqgsr4jh50qyx2wqywvcb24fkvy40j9" else
-        "0g05pa4z6kdy0giz7hjgjgwf4zzr5l8cf1zh247ymixlikn3fnpx";
-    };
-
-    propagatedBuildInputs = with self; [ numpy six protobuf3_0_0b2 pkgs.swig mock];
-
-    preFixup = ''
-      RPATH="${stdenv.lib.makeLibraryPath [ pkgs.gcc.cc.lib pkgs.zlib ]}"
-      find $out -name '*.so' -exec patchelf --set-rpath "$RPATH" {} \;
-    '';
-
-    doCheck = false;
-
-    meta = {
-      description = "TensorFlow helps the tensors flow (no gpu support)";
-      homepage = http://tensorflow.org;
-      license = licenses.asl20;
-      platforms = with platforms; linux ++ darwin;
-    };
-  };
-
-  tensorflowCuDNN = buildPythonPackage rec {
-    name = "tensorflow";
-    version = "0.11.0rc0";
-    format = "wheel";
-
-    src = pkgs.fetchurl {
-      url = "https://storage.googleapis.com/tensorflow/linux/gpu/tensorflow-${version}-cp27-none-linux_x86_64.whl";
-      sha256 = "1r8zlz95sw7bnjzg5zdbpa9dj8wmp8cvvgyl9sv3amsscagnnfj5";
-    };
-
-    buildInputs = with self; [ pkgs.swig ];
-    propagatedBuildInputs = with self; [ numpy six protobuf3_0 pkgs.cudatoolkit75 pkgs.cudnn5_cudatoolkit75 pkgs.gcc49 self.mock ];
-
-    # Note that we need to run *after* the fixup phase because the
-    # libraries are loaded at runtime. If we run in preFixup then
-    # patchelf --shrink-rpath will remove the cuda libraries.
-    postFixup = let rpath = stdenv.lib.makeLibraryPath [
-      pkgs.gcc49.cc.lib
-      pkgs.zlib pkgs.cudatoolkit75
-      pkgs.cudnn5_cudatoolkit75
-      pkgs.linuxPackages.nvidia_x11
-    ]; in ''
-      find $out -name '*.so' -exec patchelf --set-rpath "${rpath}" {} \;
-    '';
-
-    doCheck = false;
-
-    meta = {
-      description = "TensorFlow helps the tensors flow (no gpu support)";
-      homepage = http://tensorflow.org;
-      license = licenses.asl20;
-      platforms   = platforms.linux;
-    };
-  };
+  tensorflowWithCuda = callPackage ../development/python-modules/tensorflow/cuda.nix { };
 
   tflearn = buildPythonPackage rec {
     name = "tflearn-0.2.1";
@@ -31969,18 +31895,28 @@ EOF
   };
 
   pypandoc = buildPythonPackage rec {
-    name = "pypandoc-1.2.0";
+    name = "pypandoc-1.3.3";
     src = pkgs.fetchurl {
-      url = "mirror://pypi/p/pypandoc/${name}.zip";
-      sha256 = "1sxmgrpy0a0yy3nyxiymzqrw715gm23s01fq53q4vgn79j47jakm";
+      url = "mirror://pypi/p/pypandoc/${name}.tar.gz";
+      sha256 = "0628f2kn4gqimnhpf251fgzl723hwgyl3idy69dkzyjvi45s5zm6";
     };
+
+    # Fix tests: first requires network access, second is a bug (reported upstream)
+    preConfigure = ''
+      substituteInPlace tests.py --replace "pypandoc.convert(url, 'html')" "'GPL2 license'"
+      substituteInPlace tests.py --replace "pypandoc.convert_file(file_name, lua_file_name)" "'<h1 id=\"title\">title</h1>'"
+    '';
+
+    LC_ALL="en_US.UTF-8";
+
     propagatedBuildInputs = with self; [ self.pip ];
-    buildInputs = [ pkgs.pandoc pkgs.texlive.combined.scheme-small pkgs.haskellPackages.pandoc-citeproc ];
+    buildInputs = [ pkgs.pandoc pkgs.texlive.combined.scheme-small pkgs.haskellPackages.pandoc-citeproc pkgs.glibcLocales ];
+
     meta = with pkgs.stdenv.lib; {
       description = "Thin wrapper for pandoc";
       homepage = "https://github.com/bebraw/pypandoc";
       license = licenses.mit;
-      maintainers = with maintainers; [ bennofs ];
+      maintainers = with maintainers; [ bennofs kristoff3r ];
     };
   };
 

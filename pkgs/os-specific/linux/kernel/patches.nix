@@ -95,9 +95,9 @@ rec {
   };
 
   grsecurity_testing = grsecPatch
-    { kver   = "4.9.8";
-      grrev  = "201702071801";
-      sha512 = "05hxn9jzkywd15iqjd7lykj0f9czw0kq1rs7krxnrk4lhr4k4ahbhq4330mw4pwcvln4ys25dw7mbljn9zvymb7b1kc3m301rrbgj5f";
+    { kver   = "4.9.10";
+      grrev  = "201702152052";
+      sha512 = "3whjlrm06r724q9lkycm2jalv3wm9bhxjlvgnglrfnc48rnv3b4j2m6gnq396pc3axnd2mpiinlwjwarw59dhs9qax9l7ddcc3cxd4k";
     };
 
   # This patch relaxes grsec constraints on the location of usermode helpers,
@@ -175,12 +175,12 @@ rec {
       };
     };
 
-  p9_caching_4_9 = rec
-    { name = "9p-caching.patch";
+  sctp_bug_on_CVE_2017_5986 = rec
+    { name = "sctp_BUG_ON_CVE_2017_5986.patch";
       patch = fetchpatch {
         inherit name;
-        url = https://github.com/edolstra/linux/commit/7e20254412c780a2102761fee92cb1d32ceeaefd.patch;
-        sha256 = "001kf1sdy6pirn8sqnfgbfahvwwkc7n7vr5i8fy2n74xph1kks5a";
+        url = "https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/patch/?id=2dcab598484185dea7ec22219c76dcdd59e3cb90";
+        sha256 = "15np10bfm5yzby9zbkrh23qpm91wnprblsk0xn9yjryypnz8njxh";
       };
     };
 

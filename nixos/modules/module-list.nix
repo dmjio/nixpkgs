@@ -41,6 +41,7 @@
   ./hardware/video/amdgpu.nix
   ./hardware/video/amdgpu-pro.nix
   ./hardware/video/ati.nix
+  ./hardware/video/capture/mwprocapture.nix
   ./hardware/video/bumblebee.nix
   ./hardware/video/displaylink.nix
   ./hardware/video/nvidia.nix
@@ -80,6 +81,7 @@
   ./programs/light.nix
   ./programs/man.nix
   ./programs/mosh.nix
+  ./programs/mtr.nix
   ./programs/nano.nix
   ./programs/oblogout.nix
   ./programs/screen.nix
@@ -113,7 +115,7 @@
   ./security/prey.nix
   ./security/rngd.nix
   ./security/rtkit.nix
-  ./security/setuid-wrappers.nix
+  ./security/wrappers/default.nix
   ./security/sudo.nix
   ./services/amqp/activemq/default.nix
   ./services/amqp/rabbitmq.nix
@@ -259,6 +261,7 @@
   ./services/misc/felix.nix
   ./services/misc/folding-at-home.nix
   ./services/misc/gammu-smsd.nix
+  ./services/misc/geoip-updater.nix
   #./services/misc/gitit.nix
   ./services/misc/gitlab.nix
   ./services/misc/gitolite.nix
@@ -293,6 +296,7 @@
   ./services/misc/siproxd.nix
   ./services/misc/sonarr.nix
   ./services/misc/spice-vdagentd.nix
+  ./services/misc/ssm-agent.nix
   ./services/misc/sssd.nix
   ./services/misc/subsonic.nix
   ./services/misc/sundtek.nix
@@ -559,7 +563,6 @@
   ./services/x11/display-managers/auto.nix
   ./services/x11/display-managers/default.nix
   ./services/x11/display-managers/gdm.nix
-  ./services/x11/display-managers/kdm.nix
   ./services/x11/display-managers/lightdm.nix
   ./services/x11/display-managers/sddm.nix
   ./services/x11/display-managers/slim.nix

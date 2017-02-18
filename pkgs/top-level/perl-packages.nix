@@ -1555,10 +1555,10 @@ let self = _self // overrides; _self = with self; {
   };
 
   CGI = buildPerlPackage rec {
-    name = "CGI-4.31";
+    name = "CGI-4.35";
     src = fetchurl {
       url = "mirror://cpan/authors/id/L/LE/LEEJO/${name}.tar.gz";
-      sha256 = "dee34f45525efb698d02c56ba2458a72acc34c4dcb05344706b587840b4e8c99";
+      sha256 = "07gwnlc7vq58fjwmfsrv0hfyirqqdrpjhf89caq34rjrkz2wsd0b";
     };
     buildInputs = [ TestDeep TestWarn ];
     propagatedBuildInputs = [ HTMLParser self."if" ];
@@ -2696,10 +2696,10 @@ let self = _self // overrides; _self = with self; {
   };
 
   CryptOpenSSLRandom = buildPerlPackage rec {
-    name = "Crypt-OpenSSL-Random-0.10";
+    name = "Crypt-OpenSSL-Random-0.11";
     src = fetchurl {
       url = "mirror://cpan/authors/id/R/RU/RURBAN/${name}.tar.gz";
-      sha256 = "12pirh1pj8lpvzcwj2if9i6dbr6a7s9g1zc7gzbd3v87d6mx0rdf";
+      sha256 = "0yjcabkibrkafywvdkmd1xpi6br48skyk3l15ni176wvlg38335v";
     };
     NIX_CFLAGS_COMPILE = "-I${pkgs.openssl.dev}/include";
     NIX_CFLAGS_LINK = "-L${pkgs.openssl.out}/lib -lcrypto";
@@ -5608,6 +5608,14 @@ let self = _self // overrides; _self = with self; {
       description = "Getopt::Long, but simpler and more powerful";
       license = with stdenv.lib.licenses; [ artistic1 gpl1Plus ];
       maintainers = [ maintainers.rycee ];
+    };
+  };
+
+  GetoptTabular = buildPerlPackage rec {
+    name = "Getopt-Tabular-0.3";
+    src = fetchurl {
+      url = "mirror://cpan/authors/id/G/GW/GWARD/${name}.tar.gz";
+      sha256 = "0xskl9lcj07sdfx5dkma5wvhhgf5xlsq0khgh8kk34dm6dv0dpwv";
     };
   };
 
@@ -9136,13 +9144,13 @@ let self = _self // overrides; _self = with self; {
   };
 
   MooseXTypes = buildPerlPackage rec {
-    name = "MooseX-Types-0.46";
+    name = "MooseX-Types-0.50";
     src = fetchurl {
       url = "mirror://cpan/authors/id/E/ET/ETHER/${name}.tar.gz";
-      sha256 = "e9e8c36284cf1adc6563c980c0a4f0a7df720dbaaece0dd6be66b975dde5db7a";
+      sha256 = "9cd87b3492cbf0be9d2df9317b2adf9fc30663770e69906654bea3f41b17cb08";
     };
-    buildInputs = [ ModuleBuildTiny Moose TestFatal TestRequires ];
-    propagatedBuildInputs = [ CarpClan Moose SubExporterForMethods SubName namespaceautoclean ];
+    buildInputs = [ ModuleBuildTiny TestFatal TestRequires self."if" ];
+    propagatedBuildInputs = [ CarpClan ModuleRuntime Moose SubExporter SubExporterForMethods SubInstall SubName namespaceautoclean ];
     meta = {
       homepage = https://github.com/moose/MooseX-Types;
       description = "Organise your Moose types in libraries";
@@ -9637,6 +9645,19 @@ let self = _self // overrides; _self = with self; {
     buildInputs = [ TestNoWarnings ];
     meta = {
       description = "Internationalizing Domain Names in Applications (IDNA)";
+    };
+  };
+
+  NetIMAPClient = buildPerlPackage rec {
+    name = "Net-IMAP-Client-0.9505";
+    src = fetchurl {
+      url = "mirror://cpan/authors/id/G/GA/GANGLION/${name}.tar.gz";
+      sha256 = "d3f6a608b85e09a8080a67a9933837aae6f2cd0e8ee39df3380123dc5e3de912";
+    };
+    buildInputs = [TestPod TestPodCoverage];
+    propagatedBuildInputs = [ IOSocketSSL ListMoreUtils ];
+    meta = {
+      description = "Not so simple IMAP client library";
     };
   };
 
