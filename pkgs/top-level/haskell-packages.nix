@@ -74,8 +74,8 @@ rec {
       inherit (pkgs.haskellPackages) ghcWithPackages;
     });
 
-    ghcHaLVM = callPackage ../development/compilers/halvm/2.2.1.nix rec {
-      bootPkgs = packages.ghc7103;
+    ghcHaLVM = callPackage ../development/compilers/halvm/2.3.0.nix rec {
+      bootPkgs = packages.ghc801;
       inherit (bootPkgs) hscolour;
     };
 
@@ -148,7 +148,7 @@ rec {
     };
     ghcHaLVM = callPackage ../development/haskell-modules {
       ghc = compiler.ghcHaLVM;
-      compilerConfig = callPackage ../development/haskell-modules/configuration-halvm-2.2.1.nix { };
+      compilerConfig = callPackage ../development/haskell-modules/configuration-halvm-2.3.0.nix { };
     };
 
     # These attributes exist only for backwards-compatibility so that we don't break

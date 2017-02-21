@@ -60,11 +60,12 @@ let
                        concatStringsSep enableFeature optionalAttrs toUpper;
 
   isGhcjs = ghc.isGhcjs or false;
-  packageDbFlag = if isGhcjs || versionOlder "7.6" ghc.version
+  isHaLVM = ghc.isHaLVM or false;
+  packageDbFlag = if isGhcjs || isHaLVM || versionOlder "7.6" ghc.version
                   then "package-db"
                   else "package-conf";
 
-  nativeGhc = if isCross || isGhcjs then ghc.bootPkgs.ghc else ghc;
+  nativeGhc = if isCross || isGhcjs || isHaLVM then ghc.bootPkgs.ghc else ghc;
   nativePackageDbFlag = if versionOlder "7.6" nativeGhc.version
                         then "package-db"
                         else "package-conf";
@@ -102,8 +103,10 @@ let
 
   defaultConfigureFlags = [
     "--verbose" "--prefix=$out" "--libdir=\\$prefix/lib/\\$compiler" "--libsubdir=\\$pkgid"
-    "--with-gcc=$CC"            # Clang won't work without that extra information.
+    "--with-gcc=$CC" # Clang won't work without that extra information.
     "--package-db=$packageConfDir"
+    (optionalString isHaLVM "--with-compiler=${ghcCommand}")
+    (optionalString isHaLVM "--with-hc-pkg=${ghcCommand}-pkg")
     (optionalString (enableSharedExecutables && stdenv.isLinux) "--ghc-option=-optl=-Wl,-rpath=$out/lib/${ghc.name}/${pname}-${version}")
     (optionalString (enableSharedExecutables && stdenv.isDarwin) "--ghc-option=-optl=-Wl,-headerpad_max_install_names")
     (optionalString enableParallelBuilding "--ghc-option=-j$NIX_BUILD_CORES")
@@ -124,8 +127,9 @@ let
 
   setupCompileFlags = [
     (optionalString (!coreSetup) "-${packageDbFlag}=$packageConfDir")
-    (optionalString (isGhcjs || versionOlder "7.8" ghc.version) "-j$NIX_BUILD_CORES")
-    (optionalString (versionOlder "7.10" ghc.version) "-threaded") # https://github.com/haskell/cabal/issues/2398
+    (optionalString (isGhcjs || isHaLVM || versionOlder "7.8" ghc.version) "-j$NIX_BUILD_CORES")
+    # https://github.com/haskell/cabal/issues/2398
+    (optionalString (versionOlder "7.10" ghc.version && !isHaLVM) "-threaded")
   ];
 
   isHaskellPkg = x: (x ? pname) && (x ? version) && (x ? env);
@@ -146,9 +150,9 @@ let
 
   ghcEnv = ghc.withPackages (p: haskellBuildInputs);
 
-  setupBuilder = if isCross || isGhcjs then "${nativeGhc}/bin/ghc" else ghcCommand;
+  setupBuilder = if isCross || isGhcjs || isHaLVM then "${nativeGhc}/bin/ghc" else ghcCommand;
   setupCommand = "./Setup";
-  ghcCommand = if isGhcjs then "ghcjs" else if isCross then "${ghc.cross.config}-ghc" else "ghc";
+  ghcCommand = if isGhcjs then "ghcjs" else if isCross then "${ghc.cross.config}-ghc" else if isHaLVM then "halvm-ghc" else "ghc";
   ghcCommandCaps = toUpper ghcCommand;
 
 in
@@ -305,11 +309,10 @@ stdenv.mkDerivation ({
         export NIX_${ghcCommandCaps}="${ghcEnv}/bin/${ghcCommand}"
         export NIX_${ghcCommandCaps}PKG="${ghcEnv}/bin/${ghcCommand}-pkg"
         export NIX_${ghcCommandCaps}_DOCDIR="${ghcEnv}/share/doc/ghc/html"
-        export NIX_${ghcCommandCaps}_LIBDIR="${ghcEnv}/lib/${ghcCommand}-${ghc.version}"
-        ${shellHook}
-      '';
+        '' + (if isHaLVM
+	       then ''export NIX_${ghcCommandCaps}_LIBDIR="${ghcEnv}/lib/HaLVM-${ghc.version}"''
+	       else ''export NIX_${ghcCommandCaps}_LIBDIR="${ghcEnv}/lib/${ghcCommand}-${ghc.version}"'') + "${shellHook}";
     };
-
   };
 
   meta = { inherit homepage license platforms; }

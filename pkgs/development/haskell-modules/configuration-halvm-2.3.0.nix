@@ -25,7 +25,7 @@ self: super: {
   hoopl = null;
   hpc = null;
   integer-gmp = null;
-  # pretty = null;
+  pretty = null;
   process = null;
   rts = null;
   template-haskell = null;
@@ -53,13 +53,7 @@ self: super: {
   # https://github.com/Deewiant/glob/issues/8
   Glob = doJailbreak super.Glob;
 
-  ## GHC 8.0.2
-
   # http://hub.darcs.net/dolio/vector-algorithms/issue/9#comment-20170112T145715
   vector-algorithms = dontCheck super.vector-algorithms;
-
-  # halvm-cabal
-
-  # halvm-hsc2hs
 
 }
