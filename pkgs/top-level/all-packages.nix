@@ -8935,6 +8935,8 @@ with pkgs;
 
   nanomsg = callPackage ../development/libraries/nanomsg { };
 
+  ndpi = callPackage ../development/libraries/ndpi { };
+
   notify-sharp = callPackage ../development/libraries/notify-sharp { };
 
   ncurses5 = callPackage ../development/libraries/ncurses { abiVersion = "5"; };
@@ -14775,6 +14777,8 @@ with pkgs;
   puredata-with-plugins = plugins: callPackage ../applications/audio/puredata/wrapper.nix { inherit plugins; };
 
   puremapping = callPackage ../applications/audio/pd-plugins/puremapping { };
+
+  pymol = callPackage ../applications/science/chemistry/pymol { };
 
   pybitmessage = callPackage ../applications/networking/instant-messengers/pybitmessage { };
 
