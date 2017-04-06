@@ -15998,8 +15998,9 @@ with pkgs;
   xdotool = callPackage ../tools/X11/xdotool { };
 
   xen_4_5 = callPackage ../applications/virtualization/xen/4.5.nix { stdenv = overrideCC stdenv gcc49; };
+  xen_4_6 = callPackage ../applications/virtualization/xen/4.6.nix { stdenv = overrideCC stdenv gcc49; };
   xen_xenServer = callPackage ../applications/virtualization/xen/4.5.nix { xenserverPatched = true; stdenv = overrideCC stdenv gcc49; };
-  xen = xen_4_5;
+  xen = xen_4_6;
 
   win-spice = callPackage ../applications/virtualization/driver/win-spice { };
   win-virtio = callPackage ../applications/virtualization/driver/win-virtio { };

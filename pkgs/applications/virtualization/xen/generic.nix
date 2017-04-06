@@ -116,13 +116,15 @@ stdenv.mkDerivation {
       substituteInPlace tools/qemu-xen-traditional-dir-remote/xen-hooks.mak \
         --replace /usr/include/pci ${pciutils}/include/pci
 
+      '' + (if xenConfig.version == "4.5.5" then ''
       substituteInPlace tools/hotplug/Linux/xen-backend.rules \
         --replace /etc/xen/scripts $out/etc/xen/scripts
 
       # blktap is not provided by xen, but by xapi
       sed -i '/blktap/d' tools/hotplug/Linux/xen-backend.rules
 
-      # Work around a bug in our GCC wrapper: `gcc -MF foo -v' doesn't
+    '' else "") + ''
+            # Work around a bug in our GCC wrapper: `gcc -MF foo -v' doesn't
       # print the GCC version number properly.
       substituteInPlace xen/Makefile \
         --replace '$(CC) $(CFLAGS) -v' '$(CC) -v'
@@ -152,17 +154,16 @@ stdenv.mkDerivation {
 
   buildFlags = "xen tools";
 
-  postBuild =
-    ''
-      make -C docs man-pages
-
-      (cd tools/xen-libhvm-dir-remote; make)
-      (cd tools/xen-libhvm-dir-remote/biospt; cc -Wall -g -D_LINUX -Wstrict-prototypes biospt.c -o biospt -I../libhvm -L../libhvm -lxenhvm)
-    '';
-
+  postBuild = ''
+    make -C docs man-pages
+  '' + (if xenConfig.version == "4.5.5"
+       then ''
+  (cd tools/xen-libhvm-dir-remote; make)
+  (cd tools/xen-libhvm-dir-remote/biospt; cc -Wall -g -D_LINUX -Wstrict-prototypes biospt.c -o biospt -I../libhvm -L../libhvm -lxenhvm)
+      '' else "");
   installPhase =
     ''
-      mkdir -p $out $out/share
+      mkdir -p $out $out/share/man
       cp -prvd dist/install/nix/store/*/* $out/
       cp -prvd dist/install/boot $out/boot
       cp -prvd dist/install/etc $out
@@ -174,10 +175,10 @@ stdenv.mkDerivation {
       for i in $out/etc/xen/scripts/!(*.sh); do
         sed -i "2s@^@export PATH=$out/bin:${scriptEnvPath}\n@" $i
       done
-
-      (cd tools/xen-libhvm-dir-remote; make install)
-      cp tools/xen-libhvm-dir-remote/biospt/biospt $out/bin/.
-    '';
+      '' + (if xenConfig.version == "4.5.5" then ''
+        (cd tools/xen-libhvm-dir-remote; make install)
+        cp tools/xen-libhvm-dir-remote/biospt/biospt $out/bin/.
+      '' else "");
 
   meta = {
     homepage = http://www.xen.org/;
