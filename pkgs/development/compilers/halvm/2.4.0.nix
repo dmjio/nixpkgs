@@ -1,5 +1,10 @@
 { stdenv, fetchgit, bootPkgs, perl, gmp, ncurses, binutils, autoconf, alex, happy, makeStaticLibraries
 , hscolour, xen, automake, gcc, git, zlib, libtool, enableIntegerSimple ? false
+, halvmSrc ? fetchgit {
+    rev = "6aa72c9b047fd8ddff857c994a5a895461fc3925";
+    url = "https://github.com/GaloisInc/HaLVM";
+    sha256 = "05cg4w6fw5ajmpmh8g2msprnygmr4isb3pphqhlddfqwyvqhl167";
+  }
 }:
 
 stdenv.mkDerivation rec {
@@ -7,11 +12,7 @@ stdenv.mkDerivation rec {
   name = "HaLVM-${version}";
   isHaLVM = true;
   isGhcjs = false;
-  src = fetchgit {
-    rev = "6aa72c9b047fd8ddff857c994a5a895461fc3925";
-    url = "https://github.com/GaloisInc/HaLVM";
-    sha256 = "05cg4w6fw5ajmpmh8g2msprnygmr4isb3pphqhlddfqwyvqhl167";
-  };
+  src = halvmSrc;
   prePatch = ''
     sed -i '312 d' Makefile
     sed -i '316,446 d' Makefile # Removes RPM packaging
