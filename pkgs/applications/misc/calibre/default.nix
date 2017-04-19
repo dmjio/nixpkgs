@@ -5,12 +5,12 @@
 }:
 
 stdenv.mkDerivation rec {
-  version = "2.79.1";
+  version = "2.83.0";
   name = "calibre-${version}";
 
   src = fetchurl {
     url = "https://download.calibre-ebook.com/${version}/${name}.tar.xz";
-    sha256 = "0slk3cili50a8kwwsk6syqqrcz0yx8yjvhm8gyggn2k2kpqjax15";
+    sha256 = "1ar6hkcl50lhgwccss759201cqgnwasqmhw9japgnz04fj66w5ln";
   };
 
   patches = [
@@ -46,6 +46,8 @@ stdenv.mkDerivation rec {
   '';
 
   dontUseQmakeConfigure = true;
+
+  enableParallelBuilding = true;
 
   nativeBuildInputs = [ makeWrapper pkgconfig qmakeHook ];
 
