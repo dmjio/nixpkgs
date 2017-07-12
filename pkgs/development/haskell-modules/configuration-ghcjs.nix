@@ -150,6 +150,15 @@ self: super:
   http2 = addBuildDepends super.http2 [ self.aeson self.aeson-pretty self.hex self.unordered-containers self.vector self.word8 ];
   # ghcjsBoot uses async 2.0.1.6, protolude wants 2.1.*
 
+  miso = overrideCabal super.miso (drv: {
+    src = pkgs.fetchFromGitHub {
+      owner = "dmjio";                                                                                                                                                                   
+      repo = "miso";                                                                                                                                                                     
+      rev = "222e56914773021707ad1eabf24de59ce815936f";                                                                                                                                  
+      sha256 = "0ngwb95885p235175l9qq73fpfv652j5n9garh97pyy46hmph4zm";   
+    };
+  });
+
   pqueue = overrideCabal super.pqueue (drv: {
     postPatch = ''
       sed -i -e '12s|null|Data.PQueue.Internals.null|' Data/PQueue/Internals.hs
