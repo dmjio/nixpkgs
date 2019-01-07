@@ -200,6 +200,7 @@ self: super:
   wai = dontHaddock super.wai;
 
   base-orphans = dontCheck super.base-orphans;
+  psqueues = dontCheck super.psqueues;    # won't cope with QuickCheck 2.12.x
   distributive = dontCheck super.distributive;
 
   # https://github.com/glguy/th-abstraction/issues/53
